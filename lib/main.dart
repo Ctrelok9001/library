@@ -25,11 +25,6 @@ void main() async {
   usePathUrlStrategy();
 
   final prefs = await SharedPreferences.getInstance();
-
-  // Репозитории создаются ОДИН раз здесь.
-  // PersistentPublisherRepository зависит от BookRepository
-  // (проверка связанных книг при удалении), поэтому зависимости
-  // связываются вручную через конструктор — без ProxyProvider и заглушек.
   final bookRepository = PersistentBookRepository(prefs);
   final authorRepository = PersistentAuthorRepository(prefs);
   final genreRepository = PersistentGenreRepository(prefs);
