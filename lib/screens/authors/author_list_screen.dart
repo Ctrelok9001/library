@@ -154,6 +154,11 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
         appBar: AppBar(
           title: const Text('Авторы'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Новый автор',
+              onPressed: () => context.go('/authors/new'),
+            ),
             if (notifier.hasSelection) ...[
               Center(
                 child: Padding(
@@ -234,7 +239,7 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
   }
 
   Widget _buildList(AuthorListNotifier notifier, ScreenSize screenSize) {
-        final allColumns = <TableColumnSpec<Author>>[
+    final allColumns = <TableColumnSpec<Author>>[
       TableColumnSpec(
         label: 'Фамилия',
         sortField: 'lastName',
@@ -291,9 +296,9 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
       }
       return [
         IconButton(
-          icon: const Icon(Icons.info_outline),
-          tooltip: 'Подробнее',
-          onPressed: () => context.go('/authors/${a.id}'),
+          icon: const Icon(Icons.edit),
+          tooltip: 'Редактировать',
+          onPressed: () => context.go('/authors/${a.id}/edit'),
         ),
         IconButton(
           icon: const Icon(Icons.delete),

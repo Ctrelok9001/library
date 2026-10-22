@@ -11,11 +11,17 @@ class AppScaffold extends StatelessWidget {
   static const _destinations = [
     (icon: Icons.menu_book, label: 'Книги', path: '/books'),
     (icon: Icons.person, label: 'Авторы', path: '/authors'),
+    (icon: Icons.category, label: 'Жанры', path: '/genres'),
+    (icon: Icons.business, label: 'Издательства', path: '/publishers'),
+    (icon: Icons.people, label: 'Читатели', path: '/readers'),
   ];
 
   int _selectedIndex(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     if (path.startsWith('/authors')) return 1;
+    if (path.startsWith('/genres')) return 2;
+    if (path.startsWith('/publishers')) return 3;
+    if (path.startsWith('/readers')) return 4;
     return 0;
   }
 

@@ -147,6 +147,11 @@ class _BookListScreenState extends State<BookListScreen> {
         appBar: AppBar(
           title: const Text('Книги'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Новая книга',
+              onPressed: () => context.go('/books/new'),
+            ),
             if (notifier.hasSelection) ...[
               Center(
                 child: Padding(
@@ -224,7 +229,7 @@ class _BookListScreenState extends State<BookListScreen> {
   }
 
   Widget _buildList(BookListNotifier notifier, ScreenSize screenSize) {
-        final allColumns = <TableColumnSpec<Book>>[
+    final allColumns = <TableColumnSpec<Book>>[
       TableColumnSpec(
         label: 'Название',
         sortField: 'title',
@@ -272,7 +277,7 @@ class _BookListScreenState extends State<BookListScreen> {
         build: (b) => Text('${b.copiesAvailable}/${b.copiesTotal}'),
       ),
     ];
-    
+
     final columns = screenSize == ScreenSize.expanded
         ? allColumns
         : allColumns
@@ -297,9 +302,9 @@ class _BookListScreenState extends State<BookListScreen> {
       }
       return [
         IconButton(
-          icon: const Icon(Icons.info_outline),
-          tooltip: 'Подробнее',
-          onPressed: () => context.go('/books/${b.id}'),
+          icon: const Icon(Icons.edit),
+          tooltip: 'Редактировать',
+          onPressed: () => context.go('/books/${b.id}/edit'),
         ),
         IconButton(
           icon: const Icon(Icons.delete),

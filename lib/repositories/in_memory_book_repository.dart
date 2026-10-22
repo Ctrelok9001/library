@@ -142,4 +142,15 @@ class InMemoryBookRepository implements BookRepository {
     }
     return count;
   }
+    @override
+  Future<List<Book>> findAll() async => List.of(_books);
+
+  @override
+  bool isbnExists(String isbn, {int? exceptId}) {
+    final needle = isbn.trim().toLowerCase();
+    return _books.any((b) =>
+        b.id != exceptId &&
+        !b.isDeleted &&
+        b.isbn.trim().toLowerCase() == needle);
+  }
 }

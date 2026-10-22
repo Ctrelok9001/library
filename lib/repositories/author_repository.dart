@@ -4,6 +4,7 @@ import '../models/author_query.dart';
 
 abstract interface class AuthorRepository {
   Future<PageResult<Author>> find(AuthorQuery query);
+  Future<List<Author>> findAll();
   Future<Author?> findById(int id);
   Future<Author> create(Author author);
   Future<Author> update(Author author);

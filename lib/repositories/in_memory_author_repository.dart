@@ -123,4 +123,6 @@ class InMemoryAuthorRepository implements AuthorRepository {
     }
     return count;
   }
+  @override
+  Future<List<Author>> findAll() async => List.of(_authors);
 }

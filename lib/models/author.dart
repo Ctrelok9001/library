@@ -42,4 +42,26 @@ class Author {
   }
 
   static const _unset = Object();
+
+    Map<String, dynamic> toJson() => {
+        'id': id,
+        'firstName': firstName,
+        'lastName': lastName,
+        'country': country,
+        'birthYear': birthYear,
+        'deathYear': deathYear,
+        'deletedAt': deletedAt?.toIso8601String(),
+      };
+
+  factory Author.fromJson(Map<String, dynamic> j) => Author(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        firstName: (j['firstName'] as String?) ?? '',
+        lastName: (j['lastName'] as String?) ?? '',
+        country: (j['country'] as String?) ?? '',
+        birthYear: (j['birthYear'] as num?)?.toInt() ?? 0,
+        deathYear: (j['deathYear'] as num?)?.toInt(),
+        deletedAt: j['deletedAt'] == null
+            ? null
+            : DateTime.tryParse(j['deletedAt'] as String),
+      );
 }

@@ -54,4 +54,35 @@ class Book {
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
+
+    Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'isbn': isbn,
+        'year': year,
+        'pages': pages,
+        'publisherId': publisherId,
+        'authorIds': authorIds,
+        'genreIds': genreIds,
+        'copiesTotal': copiesTotal,
+        'copiesAvailable': copiesAvailable,
+        'deletedAt': deletedAt?.toIso8601String(),
+      };
+
+  factory Book.fromJson(Map<String, dynamic> j) => Book(
+        id: (j['id'] as num?)?.toInt() ?? 0,
+        title: (j['title'] as String?) ?? '',
+        isbn: (j['isbn'] as String?) ?? '',
+        year: (j['year'] as num?)?.toInt() ?? 0,
+        pages: (j['pages'] as num?)?.toInt() ?? 0,
+        publisherId: (j['publisherId'] as num?)?.toInt() ?? 0,
+        authorIds: (j['authorIds'] as List?)?.cast<int>().toList() ?? const [],
+        genreIds: (j['genreIds'] as List?)?.cast<int>().toList() ?? const [],
+        copiesTotal: (j['copiesTotal'] as num?)?.toInt() ?? 0,
+        copiesAvailable: (j['copiesAvailable'] as num?)?.toInt() ?? 0,
+        deletedAt: j['deletedAt'] == null
+            ? null
+            : DateTime.tryParse(j['deletedAt'] as String),
+      );
 }
+

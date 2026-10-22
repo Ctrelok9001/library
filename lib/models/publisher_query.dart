@@ -1,0 +1,100 @@
+class PublisherQuery {
+  final String search;
+  final String? country;
+  final String sortField;
+  final bool sortAscending;
+  final int page;
+  final int size;
+  final bool includeDeleted;
+
+  const PublisherQuery({
+    this.search = '',
+    this.country,
+    this.sortField = 'name',
+    this.sortAscending = true,
+    this.page = 1,
+    this.size = 10,
+    this.includeDeleted = false,
+  });
+
+  static const _unset = Object();
+
+  PublisherQuery copyWith({
+    String? search,
+    Object? country = _unset,
+    String? sortField,
+    bool? sortAscending,
+    int? page,
+    int? size,
+    bool? includeDeleted,
+  }) {
+    return PublisherQuery(
+      search: search ?? this.search,
+      country: country == _unset ? this.country : country as String?,
+      sortField: sortField ?? this.sortField,
+      sortAscending: sortAscending ?? this.sortAscending,
+      page: page ?? 1,
+      size: size ?? this.size,
+      includeDeleted: includeDeleted ?? this.includeDeleted,
+    );
+  }
+
+  PublisherQuery withPage(int p) => PublisherQuery(
+        search: search,
+        country: country,
+        sortField: sortField,
+        sortAscending: sortAscending,
+        page: p,
+        size: size,
+        includeDeleted: includeDeleted,
+      );
+
+  Map<String, String> toQueryParameters() {
+    final p = <String, String>{};
+    if (search.isNotEmpty) p['search'] = search;
+    if (country != null) p['country'] = country!;
+    if (sortField != 'name') p['sort'] = sortField;
+    if (!sortAscending) p['sort'] = '${p['sort'] ?? sortField},desc';
+    if (page != 1) p['page'] = page.toString();
+    if (size != 10) p['size'] = size.toString();
+    if (includeDeleted) p['deleted'] = '1';
+    return p;
+  }
+
+  factory PublisherQuery.fromUri(Uri uri) {
+    final p = uri.queryParameters;
+    bool asc = true;
+    String sf = 'name';
+    final s = p['sort'];
+    if (s != null) {
+      final parts = s.split(',');
+      sf = parts[0];
+      if (parts.length > 1 && parts[1] == 'desc') asc = false;
+    }
+    return PublisherQuery(
+      search: p['search'] ?? '',
+      country: p['country'],
+      sortField: sf,
+      sortAscending: asc,
+      page: int.tryParse(p['page'] ?? '') ?? 1,
+      size: int.tryParse(p['size'] ?? '') ?? 10,
+      includeDeleted: p['deleted'] == '1',
+    );
+  }
+
+  @override
+  bool operator ==(Object o) =>
+      identical(this, o) ||
+      o is PublisherQuery &&
+          search == o.search &&
+          country == o.country &&
+          sortField == o.sortField &&
+          sortAscending == o.sortAscending &&
+          page == o.page &&
+          size == o.size &&
+          includeDeleted == o.includeDeleted;
+
+  @override
+  int get hashCode => Object.hash(
+      search, country, sortField, sortAscending, page, size, includeDeleted);
+}
