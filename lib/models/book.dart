@@ -69,20 +69,43 @@ class Book {
         'deletedAt': deletedAt?.toIso8601String(),
       };
 
-  factory Book.fromJson(Map<String, dynamic> j) => Book(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        title: (j['title'] as String?) ?? '',
-        isbn: (j['isbn'] as String?) ?? '',
-        year: (j['year'] as num?)?.toInt() ?? 0,
-        pages: (j['pages'] as num?)?.toInt() ?? 0,
-        publisherId: (j['publisherId'] as num?)?.toInt() ?? 0,
-        authorIds: (j['authorIds'] as List?)?.cast<int>().toList() ?? const [],
-        genreIds: (j['genreIds'] as List?)?.cast<int>().toList() ?? const [],
-        copiesTotal: (j['copiesTotal'] as num?)?.toInt() ?? 0,
-        copiesAvailable: (j['copiesAvailable'] as num?)?.toInt() ?? 0,
-        deletedAt: j['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(j['deletedAt'] as String),
-      );
-}
+    factory Book.fromJson(Map<String, dynamic> j) {
+    int publisherId = 0;
+    final p = j['publisherId'] ?? j['publisher'];
+    if (p is int) {
+      publisherId = p;
+    } else if (p is Map) {
+      publisherId = (p['id'] as num?)?.toInt() ?? 0;
+    }
 
+    List<int> parseIds(dynamic raw, String altKey) {
+      final v = raw ?? j[altKey];
+      if (v is List) {
+        if (v.isNotEmpty && v.first is Map) {
+          return v
+              .whereType<Map>()
+              .map((e) => (e['id'] as num?)?.toInt() ?? 0)
+              .toList();
+        }
+        return v.cast<int>().toList();
+      }
+      return const [];
+    }
+
+    return Book(
+      id: (j['id'] as num?)?.toInt() ?? 0,
+      title: (j['title'] as String?) ?? '',
+      isbn: (j['isbn'] as String?) ?? '',
+      year: (j['year'] as num?)?.toInt() ?? 0,
+      pages: (j['pages'] as num?)?.toInt() ?? 0,
+      publisherId: publisherId,
+      authorIds: parseIds(j['authorIds'], 'authors'),
+      genreIds: parseIds(j['genreIds'], 'genres'),
+      copiesTotal: (j['copiesTotal'] as num?)?.toInt() ?? 0,
+      copiesAvailable: (j['copiesAvailable'] as num?)?.toInt() ?? 0,
+      deletedAt: j['deletedAt'] == null
+          ? null
+          : DateTime.tryParse(j['deletedAt'] as String),
+    );
+  }
+}

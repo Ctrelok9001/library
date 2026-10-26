@@ -42,26 +42,34 @@ class Author {
   }
 
   static const _unset = Object();
+    factory Author.fromJson(Map<String, dynamic> j) {
+    String firstName = (j['firstName'] as String?) ?? '';
+    String lastName = (j['lastName'] as String?) ?? '';
 
-    Map<String, dynamic> toJson() => {
-        'id': id,
-        'firstName': firstName,
-        'lastName': lastName,
-        'country': country,
+    final full = j['fullName'] as String?;
+    if (full != null && full.trim().isNotEmpty) {
+      final parts = full.trim().split(RegExp(r'\s+'));
+      lastName = parts.first;
+      firstName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+
+    return Author(
+      id: (j['id'] as num?)?.toInt() ?? 0,
+      firstName: firstName,
+      lastName: lastName,
+      country: (j['country'] as String?) ?? '',
+      birthYear: (j['birthYear'] as num?)?.toInt() ?? 0,
+      deathYear: (j['deathYear'] as num?)?.toInt(),
+      deletedAt: j['deletedAt'] == null
+          ? null
+          : DateTime.tryParse(j['deletedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'fullName': '$lastName $firstName',
         'birthYear': birthYear,
+        'country': country,
         'deathYear': deathYear,
-        'deletedAt': deletedAt?.toIso8601String(),
       };
-
-  factory Author.fromJson(Map<String, dynamic> j) => Author(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        firstName: (j['firstName'] as String?) ?? '',
-        lastName: (j['lastName'] as String?) ?? '',
-        country: (j['country'] as String?) ?? '',
-        birthYear: (j['birthYear'] as num?)?.toInt() ?? 0,
-        deathYear: (j['deathYear'] as num?)?.toInt(),
-        deletedAt: j['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(j['deletedAt'] as String),
-      );
 }

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../models/author.dart';
 import '../models/page_result.dart';
 import '../models/author_query.dart';
@@ -21,7 +23,7 @@ class InMemoryAuthorRepository implements AuthorRepository {
   int _nextId = seedAuthors.length + 1;
 
   @override
-  Future<PageResult<Author>> find(AuthorQuery q) async {
+  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
     var rows = _authors.where((a) => q.includeDeleted || !a.isDeleted).toList();
@@ -123,6 +125,7 @@ class InMemoryAuthorRepository implements AuthorRepository {
     }
     return count;
   }
+
   @override
   Future<List<Author>> findAll() async => List.of(_authors);
 }

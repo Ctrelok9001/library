@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/api_exceptions.dart';
+import '../../core/ref_cache.dart';      
 import '../../core/validators.dart';
 import '../../models/book.dart';
-import '../../repositories/author_repository.dart';
 import '../../repositories/book_repository.dart';
-import '../../repositories/genre_repository.dart';
-import '../../repositories/publisher_repository.dart';
 import '../../widgets/entity_form.dart';
 import '../../widgets/multi_select_field.dart';
+import 'package:go_router/go_router.dart';
 
 class BookFormScreen extends StatefulWidget {
   final int? id;
@@ -34,6 +34,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
   bool _loading = true;
   String? _error;
+  
+  Map<String, String> _serverErrors = {};
+  bool _saving = false;
 
   @override
   void initState() {
@@ -64,6 +67,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
       _genreIds = List.from(book.genreIds);
       _loading = false;
     });
+    context.read<RefCache>().invalidate();
   }
 
   @override
@@ -78,33 +82,55 @@ class _BookFormScreenState extends State<BookFormScreen> {
   }
 
   Future<void> _submit() async {
-    final repo = context.read<BookRepository>();
-    final book = Book(
-      id: widget.id ?? 0,
-      title: _title.text.trim(),
-      isbn: _isbn.text.trim(),
-      year: int.parse(_year.text.trim()),
-      pages: int.parse(_pages.text.trim()),
-      publisherId: _publisherId!,
-      authorIds: List.from(_authorIds),
-      genreIds: List.from(_genreIds),
-      copiesTotal: int.parse(_copiesTotal.text.trim()),
-      copiesAvailable: int.parse(_copiesAvailable.text.trim()),
-    );
-    if (widget.isEditing) {
-      await repo.update(book);
-    } else {
-      await repo.create(book);
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _serverErrors = {};
+      _saving = true;
+    });
+
+    try {
+      final repo = context.read<BookRepository>();
+      final book = Book(
+        id: widget.id ?? 0,
+        title: _title.text.trim(),
+        isbn: _isbn.text.trim(),
+        year: int.parse(_year.text.trim()),
+        pages: int.parse(_pages.text.trim()),
+        publisherId: _publisherId!,
+        authorIds: List.from(_authorIds),
+        genreIds: List.from(_genreIds),
+        copiesTotal: int.parse(_copiesTotal.text.trim()),
+        copiesAvailable: int.parse(_copiesAvailable.text.trim()),
+      );
+      
+      if (widget.isEditing) {
+        await repo.update(book);
+      } else {
+        await repo.create(book);
+      }
+      
+      if (!mounted) return;
+      context.go('/books');
+      
+    } on ValidationException catch (e) {
+      setState(() => _serverErrors = e.errors);
+      _formKey.currentState?.validate(); 
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Theme.of(context).colorScheme.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    final bookRepo = context.read<BookRepository>();
-    final authorRepo = context.read<AuthorRepository>();
-    final genreRepo = context.read<GenreRepository>();
-    final pubRepo = context.read<PublisherRepository>();
-
     if (_loading || _error != null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.isEditing ? 'Редактирование книги' : 'Новая книга')),
@@ -122,129 +148,141 @@ class _BookFormScreenState extends State<BookFormScreen> {
       );
     }
 
+    final refCache = context.read<RefCache>();
+
     return FutureBuilder(
       future: Future.wait([
-        authorRepo.findAll(),
-        genreRepo.findAll(),
-        pubRepo.findAll(),
+        refCache.authors(),
+        refCache.genres(),
+        refCache.publishers(),
       ]),
       builder: (context, snap) {
         if (!snap.hasData) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        final authors = snap.data![0] as List;
-        final genres = snap.data![1] as List;
-        final publishers = snap.data![2] as List;
+        final authors = snap.data![0] as List<dynamic>;
+        final genres = snap.data![1] as List<dynamic>;
+        final publishers = snap.data![2] as List<dynamic>;
 
-        return EntityForm(
-          title: widget.isEditing ? 'Редактирование книги' : 'Новая книга',
-          isEditing: widget.isEditing,
-          onSubmit: _submit,
-          fields: [
-            EntityFormField(
-              name: 'title',
-              build: (_) => TextFormField(
-                controller: _title,
-                decoration: const InputDecoration(labelText: 'Название', border: OutlineInputBorder()),
-                validator: V.combine([V.required(), V.length(min: 2, max: 300)]),
-              ),
-            ),
-            EntityFormField(
-              name: 'isbn',
-              build: (_) => TextFormField(
-                controller: _isbn,
-                decoration: const InputDecoration(labelText: 'ISBN', border: OutlineInputBorder()),
-                validator: V.combine([
-                  V.required(),
-                  V.isbn(),
-                  V.uniqueIsbn(bookRepo, exceptId: widget.id),
-                ]),
-              ),
-            ),
-            EntityFormField(
-              name: 'year',
-              build: (_) => TextFormField(
-                controller: _year,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Год издания', border: OutlineInputBorder()),
-                validator: V.integer(min: 1450, max: 2100, label: 'Год'),
-              ),
-            ),
-            EntityFormField(
-              name: 'pages',
-              build: (_) => TextFormField(
-                controller: _pages,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Страниц', border: OutlineInputBorder()),
-                validator: V.positive(label: 'Страниц'),
-              ),
-            ),
-            EntityFormField(
-              name: 'publisher',
-              build: (_) => DropdownButtonFormField<int>(
-                value: _publisherId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Издательство', border: OutlineInputBorder()),
-                items: [
-                  for (final p in publishers)
-                    if (!(p as dynamic).isDeleted)
-                      DropdownMenuItem(value: p.id as int, child: Text(p.name as String)),
-                ],
-                onChanged: (v) => setState(() => _publisherId = v),
-                validator: (v) => v == null ? 'Выберите издательство' : null,
-              ),
-            ),
-            EntityFormField(
-              name: 'authors',
-              build: (_) => MultiSelectField<int>(
-                initialValue: _authorIds,
-                label: 'Авторы',
-                options: authors.where((a) => !(a as dynamic).isDeleted).cast<dynamic>().toList().map((a) => a.id as int).toList(),
-                labelOf: (id) => authors.firstWhere((a) => a.id == id).fullName,
-                validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы одного автора' : null,
-                chipBuilder: (id, selected, toggle) => FilterChip(
-                  label: Text(authors.firstWhere((a) => a.id == id).fullName),
-                  selected: selected,
-                  onSelected: (_) => toggle(),
+        return Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Scaffold(
+            appBar: AppBar(title: Text(widget.isEditing ? 'Редактирование книги' : 'Новаяا книга')),
+            body: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    _buildField(
+                      'Название',
+                      _title,
+                      V.combine([V.required(), V.length(min: 2, max: 300)]),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                      'ISBN',
+                      _isbn,
+                      (v) {
+                        final local = V.combine([V.required(), V.isbn()])(v);
+                        if (local != null) return local;
+                        return _serverErrors['isbn']; 
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                      'Год издания',
+                      _year,
+                      V.integer(min: 1450, max: 2100, label: 'Год'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                      'Страниц',
+                      _pages,
+                      V.positive(label: 'Страниц'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int>(
+                      value: _publisherId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Издательство', border: OutlineInputBorder()),
+                      items: [
+                        for (final p in publishers)
+                          if (!(p as dynamic).isDeleted)
+                            DropdownMenuItem(value: (p as dynamic).id as int, child: Text((p as dynamic).name as String)),
+                      ],
+                      onChanged: (v) => setState(() => _publisherId = v),
+                      validator: (v) => v == null ? 'Выберите издательство' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    MultiSelectField<int>(
+                      initialValue: _authorIds,
+                      label: 'Авторы',
+                      options: authors.where((a) => !(a as dynamic).isDeleted).map((a) => (a as dynamic).id as int).toList(),
+                      labelOf: (id) => authors.firstWhere((a) => (a as dynamic).id == id).fullName,
+                      validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы одного автора' : null,
+                      chipBuilder: (id, selected, toggle) => FilterChip(
+                        label: Text(authors.firstWhere((a) => (a as dynamic).id == id).fullName),
+                        selected: selected,
+                        onSelected: (_) => toggle(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    MultiSelectField<int>(
+                      initialValue: _genreIds,
+                      label: 'Жанры',
+                      options: genres.where((g) => !(g as dynamic).isDeleted).map((g) => (g as dynamic).id as int).toList(),
+                      labelOf: (id) => genres.firstWhere((g) => (g as dynamic).id == id).name,
+                      validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы один жанр' : null,
+                      chipBuilder: (id, selected, toggle) => FilterChip(
+                        label: Text(genres.firstWhere((g) => (g as dynamic).id == id).name),
+                        selected: selected,
+                        onSelected: (_) => toggle(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                      'Экземпляров всего',
+                      _copiesTotal,
+                      V.positive(label: 'Количество'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildField(
+                      'Экземпляров в наличии',
+                      _copiesAvailable,
+                      V.integer(min: 0, label: 'Количество'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _saving ? null : _submit,
+                        child: _saving
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : Text(widget.isEditing ? 'Сохранить' : 'Создать'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            EntityFormField(
-              name: 'genres',
-              build: (_) => MultiSelectField<int>(
-                initialValue: _genreIds,
-                label: 'Жанры',
-                options: genres.where((g) => !(g as dynamic).isDeleted).cast<dynamic>().toList().map((g) => g.id as int).toList(),
-                labelOf: (id) => genres.firstWhere((g) => g.id == id).name,
-                validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы один жанр' : null,
-                chipBuilder: (id, selected, toggle) => FilterChip(
-                  label: Text(genres.firstWhere((g) => g.id == id).name),
-                  selected: selected,
-                  onSelected: (_) => toggle(),
-                ),
-              ),
-            ),
-            EntityFormField(
-              name: 'copiesTotal',
-              build: (_) => TextFormField(
-                controller: _copiesTotal,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Экземпляров всего', border: OutlineInputBorder()),
-                validator: V.positive(label: 'Количество'),
-              ),
-            ),
-            EntityFormField(
-              name: 'copiesAvailable',
-              build: (_) => TextFormField(
-                controller: _copiesAvailable,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Экземпляров в наличии', border: OutlineInputBorder()),
-                validator: V.integer(min: 0, label: 'Количество'),
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
   }
+
+  Widget _buildField(String label, TextEditingController controller, String? Function(String?) validator, {TextInputType? keyboardType}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      validator: validator,
+    );
+        }
 }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,7 +62,7 @@ class PersistentPublisherRepository implements PublisherRepository {
   }
 
   @override
-  Future<PageResult<Publisher>> find(PublisherQuery q) async {
+  Future<PageResult<Publisher>> find(PublisherQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _items.where((p) => q.includeDeleted || !p.isDeleted).toList();

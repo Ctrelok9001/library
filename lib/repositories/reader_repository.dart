@@ -1,9 +1,10 @@
+import 'package:dio/dio.dart';
 import '../models/reader.dart';
 import '../models/page_result.dart';
 import '../models/reader_query.dart';
 
 abstract interface class ReaderRepository {
-  Future<PageResult<Reader>> find(ReaderQuery q);
+  Future<PageResult<Reader>> find(ReaderQuery q, {CancelToken? cancelToken});
   Future<List<Reader>> findAll();
   Future<Reader?> findById(int id);
   Future<Reader> create(Reader r);

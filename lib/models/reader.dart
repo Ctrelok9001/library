@@ -43,26 +43,47 @@ class Reader {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'firstName': firstName,
-        'lastName': lastName,
+        'fullName': '$lastName $firstName', 
         'email': email,
         'phone': phone,
-        'card': card.toJson(),
-        'deletedAt': deletedAt?.toIso8601String(),
       };
 
-  factory Reader.fromJson(Map<String, dynamic> j) => Reader(
-        id: (j['id'] as num?)?.toInt() ?? 0,
-        firstName: (j['firstName'] as String?) ?? '',
-        lastName: (j['lastName'] as String?) ?? '',
-        email: (j['email'] as String?) ?? '',
-        phone: (j['phone'] as String?) ?? '',
-        card: j['card'] is Map
-            ? LibraryCard.fromJson(j['card'] as Map<String, dynamic>)
-            : LibraryCard(number: '', issuedAt: DateTime.now()),
-        deletedAt: j['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(j['deletedAt'] as String),
+  factory Reader.fromJson(Map<String, dynamic> j) {
+    String firstName = (j['firstName'] as String?) ?? '';
+    String lastName = (j['lastName'] as String?) ?? '';
+    
+    final full = j['fullName'] as String?;
+    if (full != null && full.trim().isNotEmpty) {
+      final parts = full.trim().split(RegExp(r'\s+'));
+      lastName = parts.first;
+      firstName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+
+    LibraryCard card;
+    final c = j['card'];
+    if (c is Map<String, dynamic>) {
+      final validUntilStr = (c['validUntil'] ?? c['expiresAt']) as String?;
+      card = LibraryCard(
+        number: (c['number'] as String?) ?? '',
+        issuedAt: c['issuedAt'] == null
+            ? DateTime.now()
+            : DateTime.parse(c['issuedAt'] as String),
+        validUntil: validUntilStr == null ? null : DateTime.tryParse(validUntilStr),
       );
+    } else {
+      card = LibraryCard(number: '', issuedAt: DateTime.now());
+    }
+
+    return Reader(
+      id: (j['id'] as num?)?.toInt() ?? 0,
+      firstName: firstName,
+      lastName: lastName,
+      email: (j['email'] as String?) ?? '',
+      phone: (j['phone'] as String?) ?? '',
+      card: card,
+      deletedAt: j['deletedAt'] == null
+          ? null
+          : DateTime.tryParse(j['deletedAt'] as String),
+    );
+  }
 }

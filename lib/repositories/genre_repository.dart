@@ -1,9 +1,10 @@
+import 'package:dio/dio.dart';
 import '../models/genre.dart';
 import '../models/page_result.dart';
 import '../models/genre_query.dart';
 
 abstract interface class GenreRepository {
-  Future<PageResult<Genre>> find(GenreQuery q);
+  Future<PageResult<Genre>> find(GenreQuery q, {CancelToken? cancelToken});
   Future<List<Genre>> findAll();
   Future<Genre?> findById(int id);
   Future<Genre> create(Genre g);

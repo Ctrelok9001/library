@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/genre.dart';
@@ -18,6 +19,7 @@ class GenreListNotifier extends ChangeNotifier {
   String? _error;
   final Set<int> _selected = {};
   bool _disposed = false;
+  CancelToken? _cancelToken;
 
   GenreQuery get query => _query;
   PageResult<Genre> get result => _result;
@@ -29,6 +31,7 @@ class GenreListNotifier extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _cancelToken?.cancel('disposed');
     super.dispose();
   }
 
@@ -37,13 +40,20 @@ class GenreListNotifier extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    _cancelToken?.cancel('superseded');
+    final token = CancelToken();
+    _cancelToken = token;
+
     _status = LoadStatus.loading;
     _error = null;
     _safeNotify();
+
     try {
-      _result = await _repository.find(_query);
+      _result = await _repository.find(_query, cancelToken: token);
+      if (token.isCancelled) return;
       _status = LoadStatus.success;
     } catch (e) {
+      if (token.isCancelled) return;
       _error = 'Не удалось загрузить список: $e';
       _status = LoadStatus.error;
     }

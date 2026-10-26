@@ -1,9 +1,10 @@
+import 'package:dio/dio.dart';
 import '../models/publisher.dart';
 import '../models/page_result.dart';
 import '../models/publisher_query.dart';
 
 abstract interface class PublisherRepository {
-  Future<PageResult<Publisher>> find(PublisherQuery q);
+  Future<PageResult<Publisher>> find(PublisherQuery q, {CancelToken? cancelToken});
   Future<List<Publisher>> findAll();
   Future<Publisher?> findById(int id);
   Future<Publisher> create(Publisher p);

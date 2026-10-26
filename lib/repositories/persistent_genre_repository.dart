@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -52,7 +53,7 @@ class PersistentGenreRepository implements GenreRepository {
   Future<List<Genre>> findAll() async => List.of(_genres);
 
   @override
-  Future<PageResult<Genre>> find(GenreQuery q) async {
+  Future<PageResult<Genre>> find(GenreQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _genres.where((g) => q.includeDeleted || !g.isDeleted).toList();

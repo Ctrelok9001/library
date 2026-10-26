@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/api_client.dart';
+import 'core/config.dart';
+import 'core/ref_cache.dart';
 import 'core/router.dart';
 import 'repositories/author_repository.dart';
 import 'repositories/book_repository.dart';
 import 'repositories/genre_repository.dart';
 import 'repositories/publisher_repository.dart';
 import 'repositories/reader_repository.dart';
-import 'repositories/persistent_book_repository.dart';
-import 'repositories/persistent_author_repository.dart';
-import 'repositories/persistent_genre_repository.dart';
-import 'repositories/persistent_publisher_repository.dart';
-import 'repositories/persistent_reader_repository.dart';
-import 'state/book_list_notifier.dart';
+import 'repositories/api_author_repository.dart';
+import 'repositories/api_book_repository.dart';
+import 'repositories/api_genre_repository.dart';
+import 'repositories/api_publisher_repository.dart';
+import 'repositories/api_reader_repository.dart';
 import 'state/author_list_notifier.dart';
+import 'state/book_list_notifier.dart';
 import 'state/genre_list_notifier.dart';
 import 'state/publisher_list_notifier.dart';
 import 'state/reader_list_notifier.dart';
@@ -24,13 +26,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
 
-  final prefs = await SharedPreferences.getInstance();
-  final bookRepository = PersistentBookRepository(prefs);
-  final authorRepository = PersistentAuthorRepository(prefs);
-  final genreRepository = PersistentGenreRepository(prefs);
-  final publisherRepository =
-      PersistentPublisherRepository(prefs, bookRepository);
-  final readerRepository = PersistentReaderRepository(prefs);
+  final dio = buildDio();
+
+  final bookRepository = ApiBookRepository(dio);
+  final authorRepository = ApiAuthorRepository(dio);
+  final genreRepository = ApiGenreRepository(dio);
+  final publisherRepository = ApiPublisherRepository(dio);
+  final readerRepository = ApiReaderRepository(dio);
 
   runApp(LibraryApp(
     bookRepository: bookRepository,
@@ -66,6 +68,10 @@ class LibraryApp extends StatelessWidget {
         Provider<GenreRepository>.value(value: genreRepository),
         Provider<PublisherRepository>.value(value: publisherRepository),
         Provider<ReaderRepository>.value(value: readerRepository),
+        Provider<RefCache>(
+          create: (_) =>
+              RefCache(authorRepository, genreRepository, publisherRepository),
+        ),
         ChangeNotifierProvider(
           create: (c) => BookListNotifier(c.read<BookRepository>()),
         ),

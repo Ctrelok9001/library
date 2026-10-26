@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../models/book.dart';
 import '../models/page_result.dart';
 import '../models/book_query.dart';
@@ -33,7 +35,7 @@ class InMemoryBookRepository implements BookRepository {
   int _nextId = seedBooks.length + 1;
 
   @override
-  Future<PageResult<Book>> find(BookQuery q) async {
+  Future<PageResult<Book>> find(BookQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
     var rows = _books.where((b) => q.includeDeleted || !b.isDeleted).toList();
@@ -142,7 +144,8 @@ class InMemoryBookRepository implements BookRepository {
     }
     return count;
   }
-    @override
+
+  @override
   Future<List<Book>> findAll() async => List.of(_books);
 
   @override

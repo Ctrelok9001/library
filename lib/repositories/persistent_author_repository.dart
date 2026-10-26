@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,7 +49,7 @@ class PersistentAuthorRepository implements AuthorRepository {
   Future<List<Author>> findAll() async => List.of(_authors);
 
   @override
-  Future<PageResult<Author>> find(AuthorQuery q) async {
+  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _authors.where((a) => q.includeDeleted || !a.isDeleted).toList();

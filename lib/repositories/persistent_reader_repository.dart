@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,7 +66,7 @@ class PersistentReaderRepository implements ReaderRepository {
   }
 
   @override
-  Future<PageResult<Reader>> find(ReaderQuery q) async {
+  Future<PageResult<Reader>> find(ReaderQuery q, {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _readers.where((r) => q.includeDeleted || !r.isDeleted).toList();
