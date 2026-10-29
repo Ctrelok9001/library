@@ -6,6 +6,8 @@ import '../../core/breakpoints.dart';
 import '../../core/reference_data.dart';
 import '../../models/book.dart';
 import '../../models/book_query.dart';
+import '../../models/role.dart';
+import '../../state/auth_notifier.dart';
 import '../../state/book_list_notifier.dart';
 import '../../state/load_status.dart';
 import '../../widgets/app_scaffold.dart';
@@ -140,19 +142,22 @@ class _BookListScreenState extends State<BookListScreen> {
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<BookListNotifier>();
+    final auth = context.watch<AuthNotifier>();
     final screenSize = screenSizeOf(context);
+    final canManage = auth.hasRole(Role.librarian);
 
     return AppScaffold(
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Книги'),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: 'Новая книга',
-              onPressed: () => context.go('/books/new'),
-            ),
-            if (notifier.hasSelection) ...[
+            if (canManage)
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: 'Новая книга',
+                onPressed: () => context.go('/books/new'),
+              ),
+            if (canManage && notifier.hasSelection) ...[
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -181,14 +186,14 @@ class _BookListScreenState extends State<BookListScreen> {
                 onQueryChanged: _applyQuery,
               ),
             ),
-            Expanded(child: _buildBody(notifier, screenSize)),
+            Expanded(child: _buildBody(notifier, screenSize, canManage, auth.hasRole(Role.admin))),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody(BookListNotifier notifier, ScreenSize screenSize) {
+  Widget _buildBody(BookListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
     switch (notifier.status) {
       case LoadStatus.idle:
       case LoadStatus.loading:
@@ -224,11 +229,11 @@ class _BookListScreenState extends State<BookListScreen> {
             ),
           );
         }
-        return _buildList(notifier, screenSize);
+        return _buildList(notifier, screenSize, canManage, isAdmin);
     }
   }
 
-  Widget _buildList(BookListNotifier notifier, ScreenSize screenSize) {
+  Widget _buildList(BookListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
     final allColumns = <TableColumnSpec<Book>>[
       TableColumnSpec(
         label: 'Название',
@@ -285,7 +290,9 @@ class _BookListScreenState extends State<BookListScreen> {
             .toList();
 
     List<Widget> buildActions(Book b) {
+      if (!canManage) return const [];
       if (b.isDeleted) {
+        if (!isAdmin) return const [];
         return [
           IconButton(
             icon: const Icon(Icons.restore),
@@ -327,9 +334,9 @@ class _BookListScreenState extends State<BookListScreen> {
                       id: b.id,
                       title: b.title,
                       subtitle: b.isbn,
-                      selectable: true,
-                      selected: notifier.selected.contains(b.id),
-                      onToggleSelect: () => notifier.toggleSelection(b.id),
+                      selectable: canManage,
+                      selected: canManage && notifier.selected.contains(b.id),
+                      onToggleSelect: canManage ? () => notifier.toggleSelection(b.id) : null,
                       onTap: () => context.go('/books/${b.id}'),
                       fields: [
                         Text('Год: ${b.year}, ${b.pages} стр.'),
@@ -344,8 +351,8 @@ class _BookListScreenState extends State<BookListScreen> {
                   columns: columns,
                   items: notifier.result.items,
                   idOf: (b) => b.id,
-                  selected: notifier.selected,
-                  onToggleSelect: notifier.toggleSelection,
+                  selected: canManage ? notifier.selected : const {},
+                  onToggleSelect: canManage ? notifier.toggleSelection : null,
                   sortField: notifier.query.sortField,
                   sortAscending: notifier.query.sortAscending,
                   onSort: (field) {
@@ -356,7 +363,7 @@ class _BookListScreenState extends State<BookListScreen> {
                           field == q.sortField ? !q.sortAscending : true,
                     ));
                   },
-                  actions: buildActions,
+                  actions: canManage ? buildActions : null,
                 ),
         ),
         Padding(

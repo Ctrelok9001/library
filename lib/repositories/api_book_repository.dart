@@ -54,6 +54,11 @@ class ApiBookRepository implements BookRepository {
         try {
           final r = await _dio.get('/books/$id');
           return Book.fromJson(r.data as Map<String, dynamic>);
+        } on DioException catch (e) {
+          if (mapDioError(e) is NotFoundException) {
+            return null;
+          }
+          rethrow;
         } on NotFoundException {
           return null;
         }
@@ -93,15 +98,15 @@ class ApiBookRepository implements BookRepository {
   Future<void> softDelete(int id) => guard(() => _dio.delete('/books/$id'));
 
   @override
-  Future<void> hardDelete(int id) =>
-      guard(() => _dio.delete('/books/$id', queryParameters: {'hard': 'true'}));
+  Future<void> hardDelete(int id) => guard(
+      () => _dio.delete('/books/$id', queryParameters: {'hard': 'true'}));
 
   @override
   Future<void> restore(int id) => guard(() => _dio.post('/books/$id/restore'));
 
   @override
   Future<int> deleteMany(List<int> ids) => guard(() async {
-        final r = await _dio.post('/books/bulk-delete', data: {'ids': ids});
-        return (r.data as Map<String, dynamic>)['deleted'] as int? ?? 0;
+        final r = await _dio.post('/books/batch-delete', data: {'ids': ids});
+        return (r.data as Map<String, dynamic>)['deleted'] as int? ?? ids.length;
       });
 }

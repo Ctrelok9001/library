@@ -63,6 +63,10 @@ ApiException mapHttpError(int status, dynamic body) {
 ApiException mapDioError(DioException e) {
   final existing = e.error;
   if (existing is ApiException) return existing;
+  if (existing is DioException) return mapDioError(existing);
+  if (e.response != null && e.response?.statusCode != null) {
+    return mapHttpError(e.response!.statusCode!, e.response?.data);
+  }
   return switch (e.type) {
     DioExceptionType.connectionTimeout ||
     DioExceptionType.sendTimeout ||
@@ -84,9 +88,9 @@ Future<T> guard<T>(Future<T> Function() action, {bool retryOnNetwork = false}) a
     } on DioException catch (e) {
       final ex = mapDioError(e);
       if (retryOnNetwork &&
-    ex is NetworkException &&
-    !(e.message ?? '').contains('отменён') &&
-    attempt < 2) {
+          ex is NetworkException &&
+          !(e.message ?? '').contains('отменён') &&
+          attempt < 2) {
         attempt++;
         await Future.delayed(Duration(milliseconds: 400 * attempt));
         continue;

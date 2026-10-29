@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-/**
- * Мок-сервер учебного API «Библиотека».
- * Запуск: node mock-server.js --port 8080 --origin http://localhost:5555
- */
-
 'use strict';
 
 const http = require('node:http');
@@ -18,9 +13,19 @@ function arg(name, fallback) {
 const PORT = Number(arg('port', 8080));
 const ORIGIN = arg('origin', '*');
 const SECRET = 'учебный-ключ';
-const ACCESS_TTL = 900;
+const ACCESS_TTL = Number(arg('ttl', 900));
 
-// Простые данные для тестирования
+// База пользователей
+const users = [
+  { id: 1, username: 'admin', password: hash('admin123'), fullName: 'Администратор', email: 'admin@lib.ru', role: 'admin' },
+  { id: 2, username: 'librarian', password: hash('librarian123'), fullName: 'Библиотекарь', email: 'lib@lib.ru', role: 'librarian' },
+  { id: 3, username: 'reader', password: hash('reader123'), fullName: 'Читатель', email: 'reader@lib.ru', role: 'reader' },
+];
+
+// Токены (для logout)
+const revokedTokens = new Set();
+
+// Данные библиотеки
 const db = {
   books: [
     { id: 1, title: 'Война и мир', isbn: '978-5-17-118366-4', year: 1869, pages: 1300, publisherId: 1, authorIds: [1], genreIds: [2], copiesTotal: 4, copiesAvailable: 4 },
@@ -41,8 +46,38 @@ const db = {
   readers: [
     { id: 1, fullName: 'Иванов И. И.', email: 'ivanov@test.ru', phone: '+79001234567', card: { number: 'RC-000001', issuedAt: '2024-01-01T00:00:00Z' } },
   ],
-  loans: [],
 };
+
+function hash(password) {
+  return crypto.createHash('sha256').update(password + SECRET).digest('hex');
+}
+
+function b64url(buf) {
+  return Buffer.from(buf).toString('base64url');
+}
+
+function sign(payload) {
+  const withId = { ...payload, jti: crypto.randomUUID() };
+  const body = b64url(JSON.stringify(withId));
+  const mac = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  return body + '.' + mac;
+}
+
+function verify(token) {
+  if (typeof token !== 'string' || !token.includes('.')) return null;
+  const [body, mac] = token.split('.');
+  const expected = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  if (mac !== expected) return null;
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+  } catch {
+    return null;
+  }
+  if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+  if (revokedTokens.has(payload.jti)) return null;
+  return payload;
+}
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', ORIGIN);
@@ -87,12 +122,19 @@ function paginate(rows, q) {
   };
 }
 
+function currentUser(req) {
+  const header = req.headers['authorization'] || '';
+  if (!header.startsWith('Bearer ')) return null;
+  const payload = verify(header.slice(7));
+  if (!payload || payload.type !== 'access') return null;
+  return users.find((u) => u.id === payload.sub) || null;
+}
+
 async function handle(req, res, url) {
   const q = Object.fromEntries(url.searchParams.entries());
   const path = url.pathname.replace(/\/+$/, '') || '/';
   const method = req.method.toUpperCase();
 
-  // Учебные переключатели
   if (q.__fail) {
     return send(res, Number(q.__fail), { message: 'Ошибка вызвана намеренно' });
   }
@@ -100,12 +142,105 @@ async function handle(req, res, url) {
   const delay = Number(q.__delay) || 0;
   if (delay > 0) await new Promise(r => setTimeout(r, Math.min(delay, 10000)));
 
-  // Health check
   if (path === '/api/__health' && method === 'GET') {
     return send(res, 200, { status: 'ok', time: new Date().toISOString() });
   }
 
-  // Книги
+  // ========== АУТЕНТИФИКАЦИЯ ==========
+  
+  if (path === '/api/auth/login' && method === 'POST') {
+    const body = await readBody(req);
+    const user = users.find(u => u.username === body.username && !u.deletedAt);
+    
+    if (!user || user.password !== hash(body.password)) {
+      return send(res, 401, { message: 'Неверный логин или пароль' });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const accessToken = sign({ sub: user.id, role: user.role, type: 'access', exp: now + ACCESS_TTL });
+    const refreshToken = sign({ sub: user.id, type: 'refresh', exp: now + 604800 });
+
+    return send(res, 200, {
+      accessToken,
+      refreshToken,
+      expiresIn: ACCESS_TTL,
+      user: { id: user.id, username: user.username, fullName: user.fullName, role: user.role },
+    });
+  }
+
+  if (path === '/api/auth/register' && method === 'POST') {
+    const body = await readBody(req);
+    
+    if (users.find(u => u.username === body.username)) {
+      return send(res, 422, { message: 'Пользователь уже существует', errors: { username: 'Такой логин уже занят' } });
+    }
+
+    const newUser = {
+      id: users.length + 1,
+      username: body.username,
+      password: hash(body.password),
+      fullName: body.fullName,
+      email: body.email,
+      role: 'reader',
+    };
+    users.push(newUser);
+
+    const now = Math.floor(Date.now() / 1000);
+    const accessToken = sign({ sub: newUser.id, role: newUser.role, type: 'access', exp: now + ACCESS_TTL });
+    const refreshToken = sign({ sub: newUser.id, type: 'refresh', exp: now + 604800 });
+
+    return send(res, 201, {
+      accessToken,
+      refreshToken,
+      expiresIn: ACCESS_TTL,
+      user: { id: newUser.id, username: newUser.username, fullName: newUser.fullName, role: newUser.role },
+    });
+  }
+
+  if (path === '/api/auth/refresh' && method === 'POST') {
+    const body = await readBody(req);
+    const payload = verify(body.refreshToken);
+    
+    if (!payload || payload.type !== 'refresh') {
+      return send(res, 401, { message: 'Токен обновления недействителен' });
+    }
+
+    const user = users.find(u => u.id === payload.sub);
+    if (!user) {
+      return send(res, 401, { message: 'Пользователь не найден' });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const accessToken = sign({ sub: user.id, role: user.role, type: 'access', exp: now + ACCESS_TTL });
+    const refreshToken = sign({ sub: user.id, type: 'refresh', exp: now + 604800 });
+
+    return send(res, 200, {
+      accessToken,
+      refreshToken,
+      expiresIn: ACCESS_TTL,
+      user: { id: user.id, username: user.username, fullName: user.fullName, role: user.role },
+    });
+  }
+
+  if (path === '/api/auth/me' && method === 'GET') {
+    const user = currentUser(req);
+    if (!user) {
+      return send(res, 401, { message: 'Требуется аутентификация' });
+    }
+    return send(res, 200, { id: user.id, username: user.username, fullName: user.fullName, role: user.role });
+  }
+
+  if (path === '/api/auth/logout' && method === 'POST') {
+    const body = await readBody(req);
+    const payload = verify(body.refreshToken);
+    if (payload) {
+      revokedTokens.add(payload.jti);
+    }
+    return send(res, 204);
+  }
+
+  // ========== КНИГИ ==========
+  
   if (path === '/api/books' && method === 'GET') {
     let rows = db.books.filter(b => !b.deletedAt);
     if (q.search) {
@@ -126,10 +261,12 @@ async function handle(req, res, url) {
   }
 
   if (path === '/api/books' && method === 'POST') {
-    const body = await readBody(req);
-    if (!body) return send(res, 400, { message: 'Некорректный JSON' });
+    const user = currentUser(req);
+    if (!user || user.role === 'reader') {
+      return send(res, 403, { message: 'Недостаточно прав' });
+    }
     
-    // Проверка уникальности ISBN
+    const body = await readBody(req);
     const existing = db.books.find(b => b.isbn === body.isbn && !b.deletedAt);
     if (existing) {
       return send(res, 422, {
@@ -145,6 +282,11 @@ async function handle(req, res, url) {
   }
 
   if (path.match(/^\/api\/books\/\d+$/) && method === 'PUT') {
+    const user = currentUser(req);
+    if (!user || user.role === 'reader') {
+      return send(res, 403, { message: 'Недостаточно прав' });
+    }
+
     const id = Number(path.split('/').pop());
     const book = db.books.find(b => b.id === id && !b.deletedAt);
     if (!book) return send(res, 404, { message: 'Книга не найдена' });
@@ -155,14 +297,34 @@ async function handle(req, res, url) {
   }
 
   if (path.match(/^\/api\/books\/\d+$/) && method === 'DELETE') {
+    const user = currentUser(req);
+    if (!user || user.role === 'reader') {
+      return send(res, 403, { message: 'Недостаточно прав' });
+    }
+
     const id = Number(path.split('/').pop());
     const book = db.books.find(b => b.id === id);
     if (!book) return send(res, 404, { message: 'Книга не найдена' });
-    book.deletedAt = new Date().toISOString();
+    
+    if (q.hard === 'true' && user.role !== 'admin') {
+      return send(res, 403, { message: 'Только админ может удалять навсегда' });
+    }
+    
+    if (q.hard === 'true') {
+      const index = db.books.indexOf(book);
+      db.books.splice(index, 1);
+    } else {
+      book.deletedAt = new Date().toISOString();
+    }
     return send(res, 204);
   }
 
   if (path === '/api/books/bulk-delete' && method === 'POST') {
+    const user = currentUser(req);
+    if (!user || user.role === 'reader') {
+      return send(res, 403, { message: 'Недостаточно прав' });
+    }
+
     const body = await readBody(req);
     const ids = body.ids || [];
     let deleted = 0;
@@ -176,7 +338,8 @@ async function handle(req, res, url) {
     return send(res, 200, { deleted });
   }
 
-  // Авторы
+  // ========== АВТОРЫ ==========
+  
   if (path === '/api/authors' && method === 'GET') {
     let rows = db.authors.filter(a => !a.deletedAt);
     if (q.search) {
@@ -187,7 +350,8 @@ async function handle(req, res, url) {
     return send(res, 200, result);
   }
 
-  // Жанры
+  // ========== ЖАНРЫ ==========
+  
   if (path === '/api/genres' && method === 'GET') {
     let rows = db.genres.filter(g => !g.deletedAt);
     if (q.search) {
@@ -198,7 +362,8 @@ async function handle(req, res, url) {
     return send(res, 200, result);
   }
 
-  // Издательства
+  // ========== ИЗДАТЕЛЬСТВА ==========
+  
   if (path === '/api/publishers' && method === 'GET') {
     let rows = db.publishers.filter(p => !p.deletedAt);
     if (q.search) {
@@ -209,9 +374,17 @@ async function handle(req, res, url) {
     return send(res, 200, result);
   }
 
-  // Читатели
+  // ========== ЧИТАТЕЛИ ==========
+  
   if (path === '/api/readers' && method === 'GET') {
+    const user = currentUser(req);
     let rows = db.readers.filter(r => !r.deletedAt);
+    
+    // Читатель видит только себя
+    if (user && user.role === 'reader') {
+      rows = rows.filter(r => r.id === user.id);
+    }
+    
     if (q.search) {
       const needle = q.search.toLowerCase();
       rows = rows.filter(r => r.fullName.toLowerCase().includes(needle) || r.email.toLowerCase().includes(needle));
@@ -248,6 +421,11 @@ server.listen(PORT, () => {
   console.log('  Учебное API «Библиотека»');
   console.log(`  Адрес:              http://localhost:${PORT}/api`);
   console.log(`  Разрешённый источник: ${ORIGIN}`);
+  console.log('');
+  console.log('  Учётные записи:');
+  console.log('    admin / admin123       (роль: admin)');
+  console.log('    librarian / librarian123  (роль: librarian)');
+  console.log('    reader / reader123     (роль: reader)');
   console.log('');
   console.log('  Проверка: http://localhost:8080/api/__health');
   console.log('  Задержка: ?__delay=1500');

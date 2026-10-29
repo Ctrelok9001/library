@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/breakpoints.dart';
 import '../../models/author.dart';
 import '../../models/author_query.dart';
+import '../../models/role.dart';
+import '../../state/auth_notifier.dart';
 import '../../state/author_list_notifier.dart';
 import '../../state/load_status.dart';
 import '../../widgets/app_scaffold.dart';
@@ -140,9 +142,11 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<AuthorListNotifier>();
+    final auth = context.watch<AuthNotifier>();
     final screenSize = screenSizeOf(context);
+    final canManage = auth.hasRole(Role.librarian);
+    final isAdmin = auth.hasRole(Role.admin);
 
-    // Collect distinct countries for filter
     final countries = notifier.result.items
         .map((a) => a.country)
         .toSet()
@@ -154,12 +158,13 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
         appBar: AppBar(
           title: const Text('Авторы'),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: 'Новый автор',
-              onPressed: () => context.go('/authors/new'),
-            ),
-            if (notifier.hasSelection) ...[
+            if (canManage)
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: 'Новый автор',
+                onPressed: () => context.go('/authors/new'),
+              ),
+            if (canManage && notifier.hasSelection) ...[
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -191,14 +196,14 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                     : ['Россия', 'Англия'],
               ),
             ),
-            Expanded(child: _buildBody(notifier, screenSize)),
+            Expanded(child: _buildBody(notifier, screenSize, canManage, isAdmin)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody(AuthorListNotifier notifier, ScreenSize screenSize) {
+  Widget _buildBody(AuthorListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
     switch (notifier.status) {
       case LoadStatus.idle:
       case LoadStatus.loading:
@@ -234,11 +239,11 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
             ),
           );
         }
-        return _buildList(notifier, screenSize);
+        return _buildList(notifier, screenSize, canManage, isAdmin);
     }
   }
 
-  Widget _buildList(AuthorListNotifier notifier, ScreenSize screenSize) {
+  Widget _buildList(AuthorListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
     final allColumns = <TableColumnSpec<Author>>[
       TableColumnSpec(
         label: 'Фамилия',
@@ -279,7 +284,9 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
             .toList();
 
     List<Widget> buildActions(Author a) {
+      if (!canManage) return const [];
       if (a.isDeleted) {
+        if (!isAdmin) return const [];
         return [
           IconButton(
             icon: const Icon(Icons.restore),
@@ -321,9 +328,9 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                       id: a.id,
                       title: '${a.lastName} ${a.firstName}',
                       subtitle: a.country,
-                      selectable: true,
-                      selected: notifier.selected.contains(a.id),
-                      onToggleSelect: () => notifier.toggleSelection(a.id),
+                      selectable: canManage,
+                      selected: canManage && notifier.selected.contains(a.id),
+                      onToggleSelect: canManage ? () => notifier.toggleSelection(a.id) : null,
                       onTap: () => context.go('/authors/${a.id}'),
                       fields: [
                         Text(
@@ -338,8 +345,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                   columns: columns,
                   items: notifier.result.items,
                   idOf: (a) => a.id,
-                  selected: notifier.selected,
-                  onToggleSelect: notifier.toggleSelection,
+                  selected: canManage ? notifier.selected : const {},
+                  onToggleSelect: canManage ? notifier.toggleSelection : null,
                   sortField: notifier.query.sortField,
                   sortAscending: notifier.query.sortAscending,
                   onSort: (field) {
@@ -350,7 +357,7 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                           field == q.sortField ? !q.sortAscending : true,
                     ));
                   },
-                  actions: buildActions,
+                  actions: canManage ? buildActions : null,
                 ),
         ),
         Padding(
