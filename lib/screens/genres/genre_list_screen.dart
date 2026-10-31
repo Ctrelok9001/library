@@ -49,7 +49,8 @@ class _GenreListScreenState extends State<GenreListScreen> {
 
   void _applyQuery(GenreQuery newQuery) {
     context.read<GenreListNotifier>().applyQuery(newQuery);
-    final uri = Uri(path: '/genres', queryParameters: newQuery.toQueryParameters());
+    final uri =
+        Uri(path: '/genres', queryParameters: newQuery.toQueryParameters());
     final qs = uri.query;
     context.go(qs.isEmpty ? '/genres' : '/genres?$qs');
   }
@@ -246,8 +247,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
           IconButton(
               icon: const Icon(Icons.restore),
               tooltip: 'Восстановить',
-              onPressed: () =>
-                  context.read<GenreListNotifier>().restore(g.id)),
+              onPressed: () => context.read<GenreListNotifier>().restore(g.id)),
           IconButton(
               icon: const Icon(Icons.delete_forever),
               tooltip: 'Удалить навсегда',
@@ -314,8 +314,7 @@ class _GenreListScreenState extends State<GenreListScreen> {
             totalPages: notifier.result.totalPages,
             totalItems: notifier.result.total,
             pageSize: notifier.query.size,
-            onPageChanged: (p) =>
-                _applyQuery(notifier.query.withPage(p)),
+            onPageChanged: (p) => _applyQuery(notifier.query.withPage(p)),
             onPageSizeChanged: (s) =>
                 _applyQuery(notifier.query.copyWith(size: s, page: 1)),
           ),

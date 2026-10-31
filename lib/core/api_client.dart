@@ -30,7 +30,8 @@ Dio buildDio(AuthNotifier authNotifier) {
       onResponse: (response, handler) {
         final status = response.statusCode ?? 0;
         if (kDebugMode) {
-          debugPrint('[API] ← ${response.requestOptions.method} ${response.requestOptions.uri} = $status');
+          debugPrint(
+              '[API] ← ${response.requestOptions.method} ${response.requestOptions.uri} = $status');
         }
         if (status >= 400) {
           return handler.reject(
@@ -49,15 +50,16 @@ Dio buildDio(AuthNotifier authNotifier) {
         if (kDebugMode) {
           debugPrint('[API] ✗ ${error.requestOptions.uri}: ${error.type}');
         }
-        
-        if (error.response?.statusCode == 401 && 
+
+        if (error.response?.statusCode == 401 &&
             !error.requestOptions.path.contains('/auth/')) {
           try {
             debugPrint('[API] Токен истёк, пытаемся обновить...');
             await authNotifier.refreshTokens();
-            
+
             final options = error.requestOptions;
-            options.headers['Authorization'] = 'Bearer ${authNotifier.accessToken}';
+            options.headers['Authorization'] =
+                'Bearer ${authNotifier.accessToken}';
             final response = await dio.fetch(options);
             return handler.resolve(response);
           } catch (e) {

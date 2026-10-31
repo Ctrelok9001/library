@@ -42,8 +42,9 @@ class AuthorDetailScreen extends StatelessWidget {
                         ),
                         child: Text('Удалён ${author.deletedAt}',
                             style: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.onErrorContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onErrorContainer,
                             )),
                       ),
                     const SizedBox(height: 16),

@@ -79,7 +79,8 @@ class EntityTable<T> extends StatelessWidget {
             rows: [
               for (final item in items)
                 DataRow(
-                  selected: onToggleSelect != null && selected.contains(idOf(item)),
+                  selected:
+                      onToggleSelect != null && selected.contains(idOf(item)),
                   onSelectChanged: onToggleSelect != null
                       ? (_) => onToggleSelect!(idOf(item))
                       : null,

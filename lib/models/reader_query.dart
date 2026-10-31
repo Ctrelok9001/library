@@ -74,17 +74,17 @@ class ReaderQuery {
   }
 
   @override
-  bool operator ==(Object o) =>
-      identical(this, o) ||
-      o is ReaderQuery &&
-          search == o.search &&
-          sortField == o.sortField &&
-          sortAscending == o.sortAscending &&
-          page == o.page &&
-          size == o.size &&
-          includeDeleted == o.includeDeleted;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReaderQuery &&
+          search == other.search &&
+          sortField == other.sortField &&
+          sortAscending == other.sortAscending &&
+          page == other.page &&
+          size == other.size &&
+          includeDeleted == other.includeDeleted;
 
   @override
-  int get hashCode => Object.hash(
-      search, sortField, sortAscending, page, size, includeDeleted);
+  int get hashCode =>
+      Object.hash(search, sortField, sortAscending, page, size, includeDeleted);
 }

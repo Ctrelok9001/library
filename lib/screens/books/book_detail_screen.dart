@@ -43,20 +43,21 @@ class BookDetailScreen extends StatelessWidget {
                         ),
                         child: Text('Удалена ${book.deletedAt}',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onErrorContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onErrorContainer,
                             )),
                       ),
                     const SizedBox(height: 16),
                     _infoRow('ISBN', book.isbn, context),
                     _infoRow('Год издания', '${book.year}', context),
                     _infoRow('Страниц', '${book.pages}', context),
-                    _infoRow('Издательство',
-                        publisherName(book.publisherId), context),
-                    _infoRow(
-                        'Жанры',
-                        book.genreIds.map(genreName).join(', '),
+                    _infoRow('Издательство', publisherName(book.publisherId),
                         context),
-                    _infoRow('Экземпляры',
+                    _infoRow('Жанры', book.genreIds.map(genreName).join(', '),
+                        context),
+                    _infoRow(
+                        'Экземпляры',
                         '${book.copiesAvailable} из ${book.copiesTotal}',
                         context),
                   ],
@@ -77,8 +78,7 @@ class BookDetailScreen extends StatelessWidget {
         children: [
           SizedBox(
             width: 160,
-            child: Text(label,
-                style: Theme.of(context).textTheme.labelLarge),
+            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
           ),
           Expanded(
             child: Text(value, style: Theme.of(context).textTheme.bodyLarge),

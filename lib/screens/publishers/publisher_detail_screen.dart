@@ -50,9 +50,7 @@ class PublisherDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _infoRow('Название', p.name, context),
                     _infoRow(
-                        'Страна',
-                        p.country.isEmpty ? '—' : p.country,
-                        context),
+                        'Страна', p.country.isEmpty ? '—' : p.country, context),
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -89,8 +87,7 @@ class PublisherDetailScreen extends StatelessWidget {
               child:
                   Text(label, style: Theme.of(context).textTheme.labelLarge)),
           Expanded(
-            child:
-                Text(value, style: Theme.of(context).textTheme.bodyLarge),
+            child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),

@@ -49,7 +49,8 @@ class PersistentAuthorRepository implements AuthorRepository {
   Future<List<Author>> findAll() async => List.of(_authors);
 
   @override
-  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) async {
+  Future<PageResult<Author>> find(AuthorQuery q,
+      {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _authors.where((a) => q.includeDeleted || !a.isDeleted).toList();

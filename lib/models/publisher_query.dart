@@ -83,16 +83,16 @@ class PublisherQuery {
   }
 
   @override
-  bool operator ==(Object o) =>
-      identical(this, o) ||
-      o is PublisherQuery &&
-          search == o.search &&
-          country == o.country &&
-          sortField == o.sortField &&
-          sortAscending == o.sortAscending &&
-          page == o.page &&
-          size == o.size &&
-          includeDeleted == o.includeDeleted;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PublisherQuery &&
+          search == other.search &&
+          country == other.country &&
+          sortField == other.sortField &&
+          sortAscending == other.sortAscending &&
+          page == other.page &&
+          size == other.size &&
+          includeDeleted == other.includeDeleted;
 
   @override
   int get hashCode => Object.hash(

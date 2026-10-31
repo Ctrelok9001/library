@@ -49,89 +49,118 @@ GoRouter buildRouter(AuthNotifier auth) {
       GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
       GoRoute(path: '/register', builder: (c, s) => const RegisterScreen()),
       GoRoute(path: '/forbidden', builder: (c, s) => const ForbiddenScreen()),
-
       GoRoute(
         path: '/books',
-        redirect: (context, state) => auth.hasRole(Role.reader) ? null : '/forbidden',
+        redirect: (context, state) =>
+            auth.hasRole(Role.reader) ? null : '/forbidden',
         pageBuilder: (c, s) => const NoTransitionPage(child: BookListScreen()),
         routes: [
           GoRoute(
             path: 'new',
             builder: (c, s) => const BookFormScreen(),
-            redirect: (c, s) => auth.hasRole(Role.librarian) ? null : '/forbidden',
+            redirect: (c, s) =>
+                auth.hasRole(Role.librarian) ? null : '/forbidden',
           ),
           GoRoute(
             path: ':id',
-            builder: (c, s) => BookDetailScreen(id: int.parse(s.pathParameters['id']!)),
+            builder: (c, s) =>
+                BookDetailScreen(id: int.parse(s.pathParameters['id']!)),
             redirect: (c, s) => auth.hasRole(Role.reader) ? null : '/forbidden',
           ),
           GoRoute(
             path: ':id/edit',
-            builder: (c, s) => BookFormScreen(id: int.tryParse(s.pathParameters['id']!)),
-            redirect: (c, s) => auth.hasRole(Role.librarian) ? null : '/forbidden',
+            builder: (c, s) =>
+                BookFormScreen(id: int.tryParse(s.pathParameters['id']!)),
+            redirect: (c, s) =>
+                auth.hasRole(Role.librarian) ? null : '/forbidden',
           ),
         ],
       ),
-
       GoRoute(
         path: '/authors',
-        redirect: (context, state) => auth.hasRole(Role.reader) ? null : '/forbidden',
-        pageBuilder: (c, s) => const NoTransitionPage(child: AuthorListScreen()),
+        redirect: (context, state) =>
+            auth.hasRole(Role.reader) ? null : '/forbidden',
+        pageBuilder: (c, s) =>
+            const NoTransitionPage(child: AuthorListScreen()),
         routes: [
           GoRoute(
             path: 'new',
             builder: (c, s) => const AuthorFormScreen(),
-            redirect: (c, s) => auth.hasRole(Role.librarian) ? null : '/forbidden',
+            redirect: (c, s) =>
+                auth.hasRole(Role.librarian) ? null : '/forbidden',
           ),
           GoRoute(
             path: ':id',
-            builder: (c, s) => AuthorDetailScreen(id: int.parse(s.pathParameters['id']!)),
+            builder: (c, s) =>
+                AuthorDetailScreen(id: int.parse(s.pathParameters['id']!)),
             redirect: (c, s) => auth.hasRole(Role.reader) ? null : '/forbidden',
           ),
           GoRoute(
             path: ':id/edit',
-            builder: (c, s) => AuthorFormScreen(id: int.tryParse(s.pathParameters['id']!)),
-            redirect: (c, s) => auth.hasRole(Role.librarian) ? null : '/forbidden',
+            builder: (c, s) =>
+                AuthorFormScreen(id: int.tryParse(s.pathParameters['id']!)),
+            redirect: (c, s) =>
+                auth.hasRole(Role.librarian) ? null : '/forbidden',
           ),
         ],
       ),
-
       GoRoute(
         path: '/genres',
-        redirect: (context, state) => auth.hasRole(Role.librarian) ? null : '/forbidden',
+        redirect: (context, state) =>
+            auth.hasRole(Role.librarian) ? null : '/forbidden',
         pageBuilder: (c, s) => const NoTransitionPage(child: GenreListScreen()),
         routes: [
           GoRoute(path: 'new', builder: (c, s) => const GenreFormScreen()),
-          GoRoute(path: ':id', builder: (c, s) => GenreDetailScreen(id: int.parse(s.pathParameters['id']!))),
-          GoRoute(path: ':id/edit', builder: (c, s) => GenreFormScreen(id: int.tryParse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id',
+              builder: (c, s) =>
+                  GenreDetailScreen(id: int.parse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id/edit',
+              builder: (c, s) =>
+                  GenreFormScreen(id: int.tryParse(s.pathParameters['id']!))),
         ],
       ),
-
       GoRoute(
         path: '/publishers',
-        redirect: (context, state) => auth.hasRole(Role.librarian) ? null : '/forbidden',
-        pageBuilder: (c, s) => const NoTransitionPage(child: PublisherListScreen()),
+        redirect: (context, state) =>
+            auth.hasRole(Role.librarian) ? null : '/forbidden',
+        pageBuilder: (c, s) =>
+            const NoTransitionPage(child: PublisherListScreen()),
         routes: [
           GoRoute(path: 'new', builder: (c, s) => const PublisherFormScreen()),
-          GoRoute(path: ':id', builder: (c, s) => PublisherDetailScreen(id: int.parse(s.pathParameters['id']!))),
-          GoRoute(path: ':id/edit', builder: (c, s) => PublisherFormScreen(id: int.tryParse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id',
+              builder: (c, s) => PublisherDetailScreen(
+                  id: int.parse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id/edit',
+              builder: (c, s) => PublisherFormScreen(
+                  id: int.tryParse(s.pathParameters['id']!))),
         ],
       ),
-
       GoRoute(
         path: '/readers',
-        redirect: (context, state) => auth.hasRole(Role.librarian) ? null : '/forbidden',
-        pageBuilder: (c, s) => const NoTransitionPage(child: ReaderListScreen()),
+        redirect: (context, state) =>
+            auth.hasRole(Role.librarian) ? null : '/forbidden',
+        pageBuilder: (c, s) =>
+            const NoTransitionPage(child: ReaderListScreen()),
         routes: [
           GoRoute(path: 'new', builder: (c, s) => const ReaderFormScreen()),
-          GoRoute(path: ':id', builder: (c, s) => ReaderDetailScreen(id: int.parse(s.pathParameters['id']!))),
-          GoRoute(path: ':id/edit', builder: (c, s) => ReaderFormScreen(id: int.tryParse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id',
+              builder: (c, s) =>
+                  ReaderDetailScreen(id: int.parse(s.pathParameters['id']!))),
+          GoRoute(
+              path: ':id/edit',
+              builder: (c, s) =>
+                  ReaderFormScreen(id: int.tryParse(s.pathParameters['id']!))),
         ],
       ),
-
       GoRoute(
         path: '/admin',
-        redirect: (context, state) => auth.hasRole(Role.admin) ? null : '/forbidden',
+        redirect: (context, state) =>
+            auth.hasRole(Role.admin) ? null : '/forbidden',
         pageBuilder: (c, s) => const NoTransitionPage(child: AdminScreen()),
       ),
     ],
@@ -143,7 +172,8 @@ GoRouter buildRouter(AuthNotifier auth) {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.orange),
             const SizedBox(height: 16),
-            Text('404: Страница «${s.uri}» не найдена', style: const TextStyle(fontSize: 18)),
+            Text('404: Страница «${s.uri}» не найдена',
+                style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: () => c.go('/books'),

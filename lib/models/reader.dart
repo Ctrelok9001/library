@@ -43,7 +43,7 @@ class Reader {
   }
 
   Map<String, dynamic> toJson() => {
-        'fullName': '$lastName $firstName', 
+        'fullName': '$lastName $firstName',
         'email': email,
         'phone': phone,
       };
@@ -51,7 +51,7 @@ class Reader {
   factory Reader.fromJson(Map<String, dynamic> j) {
     String firstName = (j['firstName'] as String?) ?? '';
     String lastName = (j['lastName'] as String?) ?? '';
-    
+
     final full = j['fullName'] as String?;
     if (full != null && full.trim().isNotEmpty) {
       final parts = full.trim().split(RegExp(r'\s+'));
@@ -68,7 +68,8 @@ class Reader {
         issuedAt: c['issuedAt'] == null
             ? DateTime.now()
             : DateTime.parse(c['issuedAt'] as String),
-        validUntil: validUntilStr == null ? null : DateTime.tryParse(validUntilStr),
+        validUntil:
+            validUntilStr == null ? null : DateTime.tryParse(validUntilStr),
       );
     } else {
       card = LibraryCard(number: '', issuedAt: DateTime.now());

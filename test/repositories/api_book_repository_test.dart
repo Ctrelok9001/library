@@ -6,11 +6,6 @@ import 'package:library_app/models/book.dart';
 import 'package:library_app/models/book_query.dart';
 import 'package:library_app/repositories/api_book_repository.dart';
 
-class _FakeDio extends Interceptor {
-  final Response Function(RequestOptions) handler;
-  _FakeDio(this.handler);
-}
-
 Dio _fakeDio(Response Function(RequestOptions) handler) {
   final dio = Dio(BaseOptions(baseUrl: 'http://test/api'));
   dio.interceptors.add(

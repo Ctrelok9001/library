@@ -23,7 +23,8 @@ class InactivityWatcher extends StatefulWidget {
     required this.child,
   });
 
-  static void showWarningPreview(BuildContext context, {VoidCallback? onContinue}) {
+  static void showWarningPreview(BuildContext context,
+      {VoidCallback? onContinue}) {
     showDialog(
       context: rootNavigatorKey.currentContext ?? context,
       barrierDismissible: false,
@@ -82,7 +83,8 @@ class _InactivityWatcherState extends State<InactivityWatcher> {
     _warningTimer?.cancel();
     _warningShown = false;
 
-    final warningTime = widget.timeout.inMilliseconds - widget.warningBefore.inMilliseconds;
+    final warningTime =
+        widget.timeout.inMilliseconds - widget.warningBefore.inMilliseconds;
     _warningTimer = Timer(Duration(milliseconds: warningTime), _showWarning);
     _timer = Timer(widget.timeout, () {
       _closeWarningDialogIfOpen();
@@ -250,7 +252,8 @@ class _WarningDialogState extends State<_WarningDialog> {
                 const SizedBox(width: 8),
                 Text(
                   'До выхода осталось: $_remaining сек.',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ],
             ),

@@ -52,8 +52,7 @@ ApiException mapHttpError(int status, dynamic body) {
     422 => ValidationException(
         message ?? 'Ошибка валидации',
         (body is Map && body['errors'] is Map)
-            ? (body['errors'] as Map)
-                .map((k, v) => MapEntry('$k', '$v'))
+            ? (body['errors'] as Map).map((k, v) => MapEntry('$k', '$v'))
             : const {},
       ),
     _ => ServerException(message ?? 'Неизвестная ошибка (код $status).'),
@@ -80,7 +79,8 @@ ApiException mapDioError(DioException e) {
   };
 }
 
-Future<T> guard<T>(Future<T> Function() action, {bool retryOnNetwork = false}) async {
+Future<T> guard<T>(Future<T> Function() action,
+    {bool retryOnNetwork = false}) async {
   int attempt = 0;
   while (true) {
     try {

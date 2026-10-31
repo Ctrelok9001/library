@@ -42,7 +42,7 @@ class Author {
   }
 
   static const _unset = Object();
-    factory Author.fromJson(Map<String, dynamic> j) {
+  factory Author.fromJson(Map<String, dynamic> j) {
     String firstName = (j['firstName'] as String?) ?? '';
     String lastName = (j['lastName'] as String?) ?? '';
 

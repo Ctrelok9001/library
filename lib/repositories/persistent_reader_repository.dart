@@ -9,11 +9,41 @@ import '../models/page_result.dart';
 import 'reader_repository.dart';
 
 final List<Reader> seedReaders = [
-  Reader(id: 1, firstName: 'Иван', lastName: 'Петров', email: 'petrov@mail.ru', phone: '+79001112233', card: LibraryCard(number: 'Б-00001', issuedAt: DateTime(2023, 1, 15))),
-  Reader(id: 2, firstName: 'Мария', lastName: 'Сидорова', email: 'sidorova@mail.ru', phone: '+79002223344', card: LibraryCard(number: 'Б-00002', issuedAt: DateTime(2023, 3, 10))),
-  Reader(id: 3, firstName: 'Алексей', lastName: 'Иванов', email: 'ivanov@mail.ru', phone: '+79003334455', card: LibraryCard(number: 'Б-00003', issuedAt: DateTime(2022, 11, 5))),
-  Reader(id: 4, firstName: 'Елена', lastName: 'Кузнецова', email: 'kuznetsova@mail.ru', phone: '+79004445566', card: LibraryCard(number: 'Б-00004', issuedAt: DateTime(2024, 2, 20))),
-  Reader(id: 5, firstName: 'Дмитрий', lastName: 'Смирнов', email: 'smirnov@mail.ru', phone: '+79005556677', card: LibraryCard(number: 'Б-00005', issuedAt: DateTime(2023, 7, 1))),
+  Reader(
+      id: 1,
+      firstName: 'Иван',
+      lastName: 'Петров',
+      email: 'petrov@mail.ru',
+      phone: '+79001112233',
+      card: LibraryCard(number: 'Б-00001', issuedAt: DateTime(2023, 1, 15))),
+  Reader(
+      id: 2,
+      firstName: 'Мария',
+      lastName: 'Сидорова',
+      email: 'sidorova@mail.ru',
+      phone: '+79002223344',
+      card: LibraryCard(number: 'Б-00002', issuedAt: DateTime(2023, 3, 10))),
+  Reader(
+      id: 3,
+      firstName: 'Алексей',
+      lastName: 'Иванов',
+      email: 'ivanov@mail.ru',
+      phone: '+79003334455',
+      card: LibraryCard(number: 'Б-00003', issuedAt: DateTime(2022, 11, 5))),
+  Reader(
+      id: 4,
+      firstName: 'Елена',
+      lastName: 'Кузнецова',
+      email: 'kuznetsova@mail.ru',
+      phone: '+79004445566',
+      card: LibraryCard(number: 'Б-00004', issuedAt: DateTime(2024, 2, 20))),
+  Reader(
+      id: 5,
+      firstName: 'Дмитрий',
+      lastName: 'Смирнов',
+      email: 'smirnov@mail.ru',
+      phone: '+79005556677',
+      card: LibraryCard(number: 'Б-00005', issuedAt: DateTime(2023, 7, 1))),
 ];
 
 class PersistentReaderRepository implements ReaderRepository {
@@ -66,7 +96,8 @@ class PersistentReaderRepository implements ReaderRepository {
   }
 
   @override
-  Future<PageResult<Reader>> find(ReaderQuery q, {CancelToken? cancelToken}) async {
+  Future<PageResult<Reader>> find(ReaderQuery q,
+      {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _readers.where((r) => q.includeDeleted || !r.isDeleted).toList();
@@ -83,7 +114,8 @@ class PersistentReaderRepository implements ReaderRepository {
 
     rows.sort((a, b) {
       final r = switch (q.sortField) {
-        'firstName' => a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase()),
+        'firstName' =>
+          a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase()),
         'email' => a.email.toLowerCase().compareTo(b.email.toLowerCase()),
         _ => a.lastName.toLowerCase().compareTo(b.lastName.toLowerCase()),
       };

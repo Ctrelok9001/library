@@ -27,13 +27,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     try {
-      await context.read<AuthNotifier>().login(_username.text.trim(), _password.text);
+      await context
+          .read<AuthNotifier>()
+          .login(_username.text.trim(), _password.text);
       if (!mounted) return;
-      
-      final from = context.read<GoRouter>().routerDelegate.currentConfiguration.uri.queryParameters['from'];
+
+      final from = context
+          .read<GoRouter>()
+          .routerDelegate
+          .currentConfiguration
+          .uri
+          .queryParameters['from'];
       if (from != null && from.isNotEmpty) {
         context.go(Uri.decodeComponent(from));
       } else {
@@ -66,25 +76,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      child: Text(_error!,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
                     ),
                   TextFormField(
                     controller: _username,
-                    decoration: const InputDecoration(labelText: 'Логин', border: OutlineInputBorder()),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Введите логин' : null,
+                    decoration: const InputDecoration(
+                        labelText: 'Логин', border: OutlineInputBorder()),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Введите логин'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Пароль', border: OutlineInputBorder()),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Введите пароль' : null,
+                    decoration: const InputDecoration(
+                        labelText: 'Пароль', border: OutlineInputBorder()),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Введите пароль' : null,
                   ),
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: _loading ? null : _submit,
-                    child: _loading 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    child: _loading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : const Text('Войти'),
                   ),
                   TextButton(

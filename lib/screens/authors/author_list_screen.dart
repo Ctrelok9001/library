@@ -94,8 +94,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Удалить автора?'),
-        content:
-            Text('${author.firstName} ${author.lastName} будет помечен как удалённый.'),
+        content: Text(
+            '${author.firstName} ${author.lastName} будет помечен как удалённый.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -118,7 +118,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Удалить навсегда?'),
-        content: Text('${author.firstName} ${author.lastName} будет стёрт полностью.'),
+        content: Text(
+            '${author.firstName} ${author.lastName} будет стёрт полностью.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -147,11 +148,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
     final canManage = auth.hasRole(Role.librarian);
     final isAdmin = auth.hasRole(Role.admin);
 
-    final countries = notifier.result.items
-        .map((a) => a.country)
-        .toSet()
-        .toList()
-      ..sort();
+    final countries =
+        notifier.result.items.map((a) => a.country).toSet().toList()..sort();
 
     return AppScaffold(
       child: Scaffold(
@@ -191,19 +189,20 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
               child: AuthorFilters(
                 query: notifier.query,
                 onQueryChanged: _applyQuery,
-                countries: countries.isNotEmpty
-                    ? countries
-                    : ['Россия', 'Англия'],
+                countries:
+                    countries.isNotEmpty ? countries : ['Россия', 'Англия'],
               ),
             ),
-            Expanded(child: _buildBody(notifier, screenSize, canManage, isAdmin)),
+            Expanded(
+                child: _buildBody(notifier, screenSize, canManage, isAdmin)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody(AuthorListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
+  Widget _buildBody(AuthorListNotifier notifier, ScreenSize screenSize,
+      bool canManage, bool isAdmin) {
     switch (notifier.status) {
       case LoadStatus.idle:
       case LoadStatus.loading:
@@ -243,7 +242,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
     }
   }
 
-  Widget _buildList(AuthorListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
+  Widget _buildList(AuthorListNotifier notifier, ScreenSize screenSize,
+      bool canManage, bool isAdmin) {
     final allColumns = <TableColumnSpec<Author>>[
       TableColumnSpec(
         label: 'Фамилия',
@@ -263,7 +263,8 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
         ),
       ),
       TableColumnSpec(label: 'Имя', build: (a) => Text(a.firstName)),
-      TableColumnSpec(label: 'Страна', sortField: 'country', build: (a) => Text(a.country)),
+      TableColumnSpec(
+          label: 'Страна', sortField: 'country', build: (a) => Text(a.country)),
       TableColumnSpec(
         label: 'Год рожд.',
         sortField: 'birthYear',
@@ -330,7 +331,9 @@ class _AuthorListScreenState extends State<AuthorListScreen> {
                       subtitle: a.country,
                       selectable: canManage,
                       selected: canManage && notifier.selected.contains(a.id),
-                      onToggleSelect: canManage ? () => notifier.toggleSelection(a.id) : null,
+                      onToggleSelect: canManage
+                          ? () => notifier.toggleSelection(a.id)
+                          : null,
                       onTap: () => context.go('/authors/${a.id}'),
                       fields: [
                         Text(

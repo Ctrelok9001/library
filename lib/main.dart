@@ -28,7 +28,7 @@ import 'widgets/inactivity_watcher.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  
+
   final prefs = await SharedPreferences.getInstance();
 
   late final AuthNotifier authNotifier;
@@ -88,7 +88,8 @@ class LibraryApp extends StatelessWidget {
         Provider<PublisherRepository>.value(value: publisherRepository),
         Provider<ReaderRepository>.value(value: readerRepository),
         Provider<RefCache>(
-          create: (_) => RefCache(authorRepository, genreRepository, publisherRepository),
+          create: (_) =>
+              RefCache(authorRepository, genreRepository, publisherRepository),
         ),
         ChangeNotifierProvider(
           create: (c) => BookListNotifier(c.read<BookRepository>()),

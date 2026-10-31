@@ -15,8 +15,6 @@ class GenreQuery {
     this.includeDeleted = false,
   });
 
-  static const _unset = Object();
-
   GenreQuery copyWith({
     String? search,
     String? sortField,
@@ -36,8 +34,13 @@ class GenreQuery {
   }
 
   GenreQuery withPage(int p) => GenreQuery(
-        search: search, sortField: sortField, sortAscending: sortAscending,
-        page: p, size: size, includeDeleted: includeDeleted);
+        search: search,
+        sortField: sortField,
+        sortAscending: sortAscending,
+        page: p,
+        size: size,
+        includeDeleted: includeDeleted,
+      );
 
   Map<String, String> toQueryParameters() {
     final p = <String, String>{};
@@ -71,17 +74,17 @@ class GenreQuery {
   }
 
   @override
-  bool operator ==(Object o) =>
-      identical(this, o) ||
-      o is GenreQuery &&
-          search == o.search &&
-          sortField == o.sortField &&
-          sortAscending == o.sortAscending &&
-          page == o.page &&
-          size == o.size &&
-          includeDeleted == o.includeDeleted;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GenreQuery &&
+          search == other.search &&
+          sortField == other.sortField &&
+          sortAscending == other.sortAscending &&
+          page == other.page &&
+          size == other.size &&
+          includeDeleted == other.includeDeleted;
 
   @override
-  int get hashCode => Object.hash(
-      search, sortField, sortAscending, page, size, includeDeleted);
+  int get hashCode =>
+      Object.hash(search, sortField, sortAscending, page, size, includeDeleted);
 }

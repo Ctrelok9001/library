@@ -10,9 +10,11 @@ class ApiAuthorRepository implements AuthorRepository {
   final Dio _dio;
   ApiAuthorRepository(this._dio);
 
-   @override
-  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) => guard(() async {
-        final r = await _dio.get('/authors',
+  @override
+  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) =>
+      guard(() async {
+        final r = await _dio.get(
+          '/authors',
           queryParameters: {
             if (q.search.trim().isNotEmpty) 'search': q.search.trim(),
             'sort': '${q.sortField},${q.sortAscending ? 'asc' : 'desc'}',

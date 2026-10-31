@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api_exceptions.dart';
-import '../../core/ref_cache.dart';      
+import '../../core/ref_cache.dart';
 import '../../core/validators.dart';
 import '../../models/book.dart';
 import '../../repositories/book_repository.dart';
-import '../../widgets/entity_form.dart';
 import '../../widgets/multi_select_field.dart';
 import 'package:go_router/go_router.dart';
 
@@ -34,7 +33,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
   bool _loading = true;
   String? _error;
-  
+
   Map<String, String> _serverErrors = {};
   bool _saving = false;
 
@@ -103,23 +102,24 @@ class _BookFormScreenState extends State<BookFormScreen> {
         copiesTotal: int.parse(_copiesTotal.text.trim()),
         copiesAvailable: int.parse(_copiesAvailable.text.trim()),
       );
-      
+
       if (widget.isEditing) {
         await repo.update(book);
       } else {
         await repo.create(book);
       }
-      
+
       if (!mounted) return;
       context.go('/books');
-      
     } on ValidationException catch (e) {
       setState(() => _serverErrors = e.errors);
-      _formKey.currentState?.validate(); 
+      _formKey.currentState?.validate();
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: Theme.of(context).colorScheme.error),
+          SnackBar(
+              content: Text(e.message),
+              backgroundColor: Theme.of(context).colorScheme.error),
         );
       }
     } finally {
@@ -133,14 +133,18 @@ class _BookFormScreenState extends State<BookFormScreen> {
   Widget build(BuildContext context) {
     if (_loading || _error != null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.isEditing ? 'Редактирование книги' : 'Новая книга')),
+        appBar: AppBar(
+            title: Text(
+                widget.isEditing ? 'Редактирование книги' : 'Новая книга')),
         body: Center(
           child: _error != null
               ? Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(_error!),
-                    FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Назад')),
+                    FilledButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Назад')),
                   ],
                 )
               : const CircularProgressIndicator(),
@@ -158,7 +162,8 @@ class _BookFormScreenState extends State<BookFormScreen> {
       ]),
       builder: (context, snap) {
         if (!snap.hasData) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         }
         final authors = snap.data![0] as List<dynamic>;
         final genres = snap.data![1] as List<dynamic>;
@@ -168,7 +173,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Scaffold(
-            appBar: AppBar(title: Text(widget.isEditing ? 'Редактирование книги' : 'Новаяا книга')),
+            appBar: AppBar(
+                title: Text(
+                    widget.isEditing ? 'Редактирование книги' : 'Новая книга')),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
@@ -187,7 +194,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
                       (v) {
                         final local = V.combine([V.required(), V.isbn()])(v);
                         if (local != null) return local;
-                        return _serverErrors['isbn']; 
+                        return _serverErrors['isbn'];
                       },
                     ),
                     const SizedBox(height: 16),
@@ -208,24 +215,38 @@ class _BookFormScreenState extends State<BookFormScreen> {
                     DropdownButtonFormField<int>(
                       value: _publisherId,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Издательство', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                          labelText: 'Издательство',
+                          border: OutlineInputBorder()),
                       items: [
                         for (final p in publishers)
                           if (!(p as dynamic).isDeleted)
-                            DropdownMenuItem(value: (p as dynamic).id as int, child: Text((p as dynamic).name as String)),
+                            DropdownMenuItem(
+                                value: (p as dynamic).id as int,
+                                child: Text((p as dynamic).name as String)),
                       ],
                       onChanged: (v) => setState(() => _publisherId = v),
-                      validator: (v) => v == null ? 'Выберите издательство' : null,
+                      validator: (v) =>
+                          v == null ? 'Выберите издательство' : null,
                     ),
                     const SizedBox(height: 16),
                     MultiSelectField<int>(
                       initialValue: _authorIds,
                       label: 'Авторы',
-                      options: authors.where((a) => !(a as dynamic).isDeleted).map((a) => (a as dynamic).id as int).toList(),
-                      labelOf: (id) => authors.firstWhere((a) => (a as dynamic).id == id).fullName,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы одного автора' : null,
+                      options: authors
+                          .where((a) => !(a as dynamic).isDeleted)
+                          .map((a) => (a as dynamic).id as int)
+                          .toList(),
+                      labelOf: (id) => authors
+                          .firstWhere((a) => (a as dynamic).id == id)
+                          .fullName,
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? 'Выберите хотя бы одного автора'
+                          : null,
                       chipBuilder: (id, selected, toggle) => FilterChip(
-                        label: Text(authors.firstWhere((a) => (a as dynamic).id == id).fullName),
+                        label: Text(authors
+                            .firstWhere((a) => (a as dynamic).id == id)
+                            .fullName),
                         selected: selected,
                         onSelected: (_) => toggle(),
                       ),
@@ -234,11 +255,20 @@ class _BookFormScreenState extends State<BookFormScreen> {
                     MultiSelectField<int>(
                       initialValue: _genreIds,
                       label: 'Жанры',
-                      options: genres.where((g) => !(g as dynamic).isDeleted).map((g) => (g as dynamic).id as int).toList(),
-                      labelOf: (id) => genres.firstWhere((g) => (g as dynamic).id == id).name,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Выберите хотя бы один жанр' : null,
+                      options: genres
+                          .where((g) => !(g as dynamic).isDeleted)
+                          .map((g) => (g as dynamic).id as int)
+                          .toList(),
+                      labelOf: (id) => genres
+                          .firstWhere((g) => (g as dynamic).id == id)
+                          .name,
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? 'Выберите хотя бы один жанр'
+                          : null,
                       chipBuilder: (id, selected, toggle) => FilterChip(
-                        label: Text(genres.firstWhere((g) => (g as dynamic).id == id).name),
+                        label: Text(genres
+                            .firstWhere((g) => (g as dynamic).id == id)
+                            .name),
                         selected: selected,
                         onSelected: (_) => toggle(),
                       ),
@@ -263,7 +293,11 @@ class _BookFormScreenState extends State<BookFormScreen> {
                       child: FilledButton(
                         onPressed: _saving ? null : _submit,
                         child: _saving
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
                             : Text(widget.isEditing ? 'Сохранить' : 'Создать'),
                       ),
                     ),
@@ -277,12 +311,15 @@ class _BookFormScreenState extends State<BookFormScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, String? Function(String?) validator, {TextInputType? keyboardType}) {
+  Widget _buildField(String label, TextEditingController controller,
+      String? Function(String?) validator,
+      {TextInputType? keyboardType}) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      decoration:
+          InputDecoration(labelText: label, border: const OutlineInputBorder()),
       validator: validator,
     );
-        }
+  }
 }

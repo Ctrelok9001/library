@@ -29,8 +29,9 @@ const publishers = <Publisher>[
   Publisher(id: 5, name: 'Азбука'),
 ];
 
-String genreName(int id) =>
-    genres.firstWhere((g) => g.id == id, orElse: () => Genre(id: id, name: '?')).name;
+String genreName(int id) => genres
+    .firstWhere((g) => g.id == id, orElse: () => Genre(id: id, name: '?'))
+    .name;
 
 String publisherName(int id) => publishers
     .firstWhere((p) => p.id == id, orElse: () => Publisher(id: id, name: '?'))

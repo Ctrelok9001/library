@@ -55,7 +55,7 @@ class Book {
     );
   }
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
         'isbn': isbn,
@@ -69,7 +69,7 @@ class Book {
         'deletedAt': deletedAt?.toIso8601String(),
       };
 
-    factory Book.fromJson(Map<String, dynamic> j) {
+  factory Book.fromJson(Map<String, dynamic> j) {
     int publisherId = 0;
     final p = j['publisherId'] ?? j['publisher'];
     if (p is int) {

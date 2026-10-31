@@ -49,10 +49,8 @@ class GenreDetailScreen extends StatelessWidget {
                       ),
                     const SizedBox(height: 16),
                     _infoRow('Название', g.name, context),
-                    _infoRow(
-                        'Описание',
-                        g.description.isEmpty ? '—' : g.description,
-                        context),
+                    _infoRow('Описание',
+                        g.description.isEmpty ? '—' : g.description, context),
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -88,8 +86,7 @@ class GenreDetailScreen extends StatelessWidget {
               child:
                   Text(label, style: Theme.of(context).textTheme.labelLarge)),
           Expanded(
-            child:
-                Text(value, style: Theme.of(context).textTheme.bodyLarge),
+            child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),

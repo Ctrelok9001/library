@@ -87,7 +87,8 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Удалить читателя?'),
-        content: Text('${r.firstName} ${r.lastName} будет помечен как удалённый.'),
+        content:
+            Text('${r.firstName} ${r.lastName} будет помечен как удалённый.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(c, false),
@@ -231,12 +232,10 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
           ),
         ),
       ),
-      TableColumnSpec(
-          label: 'Имя', build: (r) => Text(r.firstName)),
+      TableColumnSpec(label: 'Имя', build: (r) => Text(r.firstName)),
       TableColumnSpec(
           label: 'Email', sortField: 'email', build: (r) => Text(r.email)),
-      TableColumnSpec(
-          label: 'Телефон', build: (r) => Text(r.phone)),
+      TableColumnSpec(label: 'Телефон', build: (r) => Text(r.phone)),
       TableColumnSpec(
           label: 'Билет',
           build: (r) => Text(r.card.number.isEmpty ? '—' : r.card.number)),
@@ -320,8 +319,7 @@ class _ReaderListScreenState extends State<ReaderListScreen> {
             totalPages: notifier.result.totalPages,
             totalItems: notifier.result.total,
             pageSize: notifier.query.size,
-            onPageChanged: (p) =>
-                _applyQuery(notifier.query.withPage(p)),
+            onPageChanged: (p) => _applyQuery(notifier.query.withPage(p)),
             onPageSizeChanged: (s) =>
                 _applyQuery(notifier.query.copyWith(size: s, page: 1)),
           ),

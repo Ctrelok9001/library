@@ -10,9 +10,11 @@ class ApiBookRepository implements BookRepository {
   final Dio _dio;
   ApiBookRepository(this._dio);
 
-    @override
-  Future<PageResult<Book>> find(BookQuery q, {CancelToken? cancelToken}) => guard(() async {
-        final response = await _dio.get('/books',
+  @override
+  Future<PageResult<Book>> find(BookQuery q, {CancelToken? cancelToken}) =>
+      guard(() async {
+        final response = await _dio.get(
+          '/books',
           queryParameters: {
             if (q.search.trim().isNotEmpty) 'search': q.search.trim(),
             if (q.genreId != null) 'genreId': q.genreId,
@@ -98,8 +100,8 @@ class ApiBookRepository implements BookRepository {
   Future<void> softDelete(int id) => guard(() => _dio.delete('/books/$id'));
 
   @override
-  Future<void> hardDelete(int id) => guard(
-      () => _dio.delete('/books/$id', queryParameters: {'hard': 'true'}));
+  Future<void> hardDelete(int id) =>
+      guard(() => _dio.delete('/books/$id', queryParameters: {'hard': 'true'}));
 
   @override
   Future<void> restore(int id) => guard(() => _dio.post('/books/$id/restore'));
@@ -107,6 +109,7 @@ class ApiBookRepository implements BookRepository {
   @override
   Future<int> deleteMany(List<int> ids) => guard(() async {
         final r = await _dio.post('/books/batch-delete', data: {'ids': ids});
-        return (r.data as Map<String, dynamic>)['deleted'] as int? ?? ids.length;
+        return (r.data as Map<String, dynamic>)['deleted'] as int? ??
+            ids.length;
       });
 }

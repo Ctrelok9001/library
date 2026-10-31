@@ -18,8 +18,7 @@ class RefCache {
 
   Future<List<Author>> authors() async =>
       _authorsList ??= await _authors.findAll();
-  Future<List<Genre>> genres() async =>
-      _genresList ??= await _genres.findAll();
+  Future<List<Genre>> genres() async => _genresList ??= await _genres.findAll();
   Future<List<Publisher>> publishers() async =>
       _publishersList ??= await _publishers.findAll();
 

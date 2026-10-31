@@ -10,8 +10,7 @@ class ReaderDetailScreen extends StatelessWidget {
   final int id;
   const ReaderDetailScreen({super.key, required this.id});
 
-  String _fmt(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
+  String _fmt(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
 
@@ -73,8 +72,7 @@ class ReaderDetailScreen extends StatelessWidget {
                     Row(
                       children: [
                         FilledButton(
-                          onPressed: () =>
-                              context.go('/readers/${r.id}/edit'),
+                          onPressed: () => context.go('/readers/${r.id}/edit'),
                           child: const Text('Редактировать'),
                         ),
                         const SizedBox(width: 16),
@@ -105,8 +103,7 @@ class ReaderDetailScreen extends StatelessWidget {
               child:
                   Text(label, style: Theme.of(context).textTheme.labelLarge)),
           Expanded(
-            child:
-                Text(value, style: Theme.of(context).textTheme.bodyLarge),
+            child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),

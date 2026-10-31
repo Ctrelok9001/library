@@ -6,16 +6,76 @@ import '../models/author_query.dart';
 import 'author_repository.dart';
 
 final List<Author> seedAuthors = [
-  Author(id: 1, firstName: 'Лев', lastName: 'Толстой', country: 'Россия', birthYear: 1828, deathYear: 1910),
-  Author(id: 2, firstName: 'Фёдор', lastName: 'Достоевский', country: 'Россия', birthYear: 1821, deathYear: 1881),
-  Author(id: 3, firstName: 'Антон', lastName: 'Чехов', country: 'Россия', birthYear: 1860, deathYear: 1904),
-  Author(id: 4, firstName: 'Александр', lastName: 'Пушкин', country: 'Россия', birthYear: 1799, deathYear: 1837),
-  Author(id: 5, firstName: 'Николай', lastName: 'Гоголь', country: 'Россия', birthYear: 1809, deathYear: 1852),
-  Author(id: 6, firstName: 'Михаил', lastName: 'Булгаков', country: 'Россия', birthYear: 1891, deathYear: 1940),
-  Author(id: 7, firstName: 'Иван', lastName: 'Тургенев', country: 'Россия', birthYear: 1818, deathYear: 1883),
-  Author(id: 8, firstName: 'Владимир', lastName: 'Набоков', country: 'Россия', birthYear: 1899, deathYear: 1977),
-  Author(id: 9, firstName: 'Уильям', lastName: 'Шекспир', country: 'Англия', birthYear: 1564, deathYear: 1616),
-  Author(id: 10, firstName: 'Чарльз', lastName: 'Диккенс', country: 'Англия', birthYear: 1812, deathYear: 1870),
+  Author(
+      id: 1,
+      firstName: 'Лев',
+      lastName: 'Толстой',
+      country: 'Россия',
+      birthYear: 1828,
+      deathYear: 1910),
+  Author(
+      id: 2,
+      firstName: 'Фёдор',
+      lastName: 'Достоевский',
+      country: 'Россия',
+      birthYear: 1821,
+      deathYear: 1881),
+  Author(
+      id: 3,
+      firstName: 'Антон',
+      lastName: 'Чехов',
+      country: 'Россия',
+      birthYear: 1860,
+      deathYear: 1904),
+  Author(
+      id: 4,
+      firstName: 'Александр',
+      lastName: 'Пушкин',
+      country: 'Россия',
+      birthYear: 1799,
+      deathYear: 1837),
+  Author(
+      id: 5,
+      firstName: 'Николай',
+      lastName: 'Гоголь',
+      country: 'Россия',
+      birthYear: 1809,
+      deathYear: 1852),
+  Author(
+      id: 6,
+      firstName: 'Михаил',
+      lastName: 'Булгаков',
+      country: 'Россия',
+      birthYear: 1891,
+      deathYear: 1940),
+  Author(
+      id: 7,
+      firstName: 'Иван',
+      lastName: 'Тургенев',
+      country: 'Россия',
+      birthYear: 1818,
+      deathYear: 1883),
+  Author(
+      id: 8,
+      firstName: 'Владимир',
+      lastName: 'Набоков',
+      country: 'Россия',
+      birthYear: 1899,
+      deathYear: 1977),
+  Author(
+      id: 9,
+      firstName: 'Уильям',
+      lastName: 'Шекспир',
+      country: 'Англия',
+      birthYear: 1564,
+      deathYear: 1616),
+  Author(
+      id: 10,
+      firstName: 'Чарльз',
+      lastName: 'Диккенс',
+      country: 'Англия',
+      birthYear: 1812,
+      deathYear: 1870),
 ];
 
 class InMemoryAuthorRepository implements AuthorRepository {
@@ -23,7 +83,8 @@ class InMemoryAuthorRepository implements AuthorRepository {
   int _nextId = seedAuthors.length + 1;
 
   @override
-  Future<PageResult<Author>> find(AuthorQuery q, {CancelToken? cancelToken}) async {
+  Future<PageResult<Author>> find(AuthorQuery q,
+      {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
     var rows = _authors.where((a) => q.includeDeleted || !a.isDeleted).toList();

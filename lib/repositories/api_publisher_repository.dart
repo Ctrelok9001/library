@@ -10,9 +10,12 @@ class ApiPublisherRepository implements PublisherRepository {
   final Dio _dio;
   ApiPublisherRepository(this._dio);
 
-    @override
-  Future<PageResult<Publisher>> find(PublisherQuery q, {CancelToken? cancelToken}) => guard(() async {
-        final r = await _dio.get('/publishers',
+  @override
+  Future<PageResult<Publisher>> find(PublisherQuery q,
+          {CancelToken? cancelToken}) =>
+      guard(() async {
+        final r = await _dio.get(
+          '/publishers',
           queryParameters: {
             if (q.search.trim().isNotEmpty) 'search': q.search.trim(),
             'sort': '${q.sortField},${q.sortAscending ? 'asc' : 'desc'}',
@@ -78,7 +81,6 @@ class ApiPublisherRepository implements PublisherRepository {
             await _dio.post('/publishers/bulk-delete', data: {'ids': ids});
         return (r.data as Map<String, dynamic>)['deleted'] as int? ?? 0;
       });
-
 
   @override
   Future<int> countBooksUsing(int publisherId) async {

@@ -29,7 +29,9 @@ class PersistentBookRepository implements BookRepository {
     try {
       final list = jsonDecode(raw) as List;
       _books.addAll(list.map((e) => Book.fromJson(e as Map<String, dynamic>)));
-      _nextId = _books.isEmpty ? 1 : _books.map((b) => b.id).reduce((a, b) => a > b ? a : b) + 1;
+      _nextId = _books.isEmpty
+          ? 1
+          : _books.map((b) => b.id).reduce((a, b) => a > b ? a : b) + 1;
     } catch (_) {
       _books.addAll(seedBooks);
       _nextId = seedBooks.length + 1;
@@ -39,7 +41,8 @@ class PersistentBookRepository implements BookRepository {
   }
 
   Future<void> _persist() async {
-    await _prefs.setString(_key, jsonEncode(_books.map((b) => b.toJson()).toList()));
+    await _prefs.setString(
+        _key, jsonEncode(_books.map((b) => b.toJson()).toList()));
   }
 
   @override

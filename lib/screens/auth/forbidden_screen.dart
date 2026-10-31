@@ -14,7 +14,8 @@ class ForbiddenScreen extends StatelessWidget {
           children: [
             const Icon(Icons.block, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            const Text('У вас недостаточно прав для просмотра этой страницы.', textAlign: TextAlign.center),
+            const Text('У вас недостаточно прав для просмотра этой страницы.',
+                textAlign: TextAlign.center),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: () => context.go('/books'),

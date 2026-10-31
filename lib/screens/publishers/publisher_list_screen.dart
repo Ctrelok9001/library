@@ -86,8 +86,8 @@ class _PublisherListScreenState extends State<PublisherListScreen> {
   Future<void> _confirmSoftDelete(Publisher p) async {
     final repo = context.read<PublisherRepository>();
     final count = await repo.countBooksUsing(p.id);
+    if (!mounted) return;
     if (count > 0) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -120,8 +120,8 @@ class _PublisherListScreenState extends State<PublisherListScreen> {
   void _confirmHardDelete(Publisher p) async {
     final repo = context.read<PublisherRepository>();
     final count = await repo.countBooksUsing(p.id);
+    if (!mounted) return;
     if (count > 0) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -143,7 +143,7 @@ class _PublisherListScreenState extends State<PublisherListScreen> {
           FilledButton(
               onPressed: () => Navigator.pop(c, true),
               style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error),
+                  backgroundColor: Theme.of(c).colorScheme.error),
               child: const Text('Удалить')),
         ],
       ),
@@ -246,8 +246,7 @@ class _PublisherListScreenState extends State<PublisherListScreen> {
     }
   }
 
-  Widget _buildList(
-      PublisherListNotifier notifier, ScreenSize screenSize) {
+  Widget _buildList(PublisherListNotifier notifier, ScreenSize screenSize) {
     final columns = <TableColumnSpec<Publisher>>[
       TableColumnSpec(
         label: 'Название',
@@ -347,8 +346,7 @@ class _PublisherListScreenState extends State<PublisherListScreen> {
             totalPages: notifier.result.totalPages,
             totalItems: notifier.result.total,
             pageSize: notifier.query.size,
-            onPageChanged: (p) =>
-                _applyQuery(notifier.query.withPage(p)),
+            onPageChanged: (p) => _applyQuery(notifier.query.withPage(p)),
             onPageSizeChanged: (s) =>
                 _applyQuery(notifier.query.copyWith(size: s, page: 1)),
           ),

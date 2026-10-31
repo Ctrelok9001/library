@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/publisher.dart';
 import '../models/publisher_query.dart';
 import '../models/page_result.dart';
-import '../models/book.dart';
 import 'publisher_repository.dart';
 import 'book_repository.dart';
 import '../core/reference_data.dart' as ref;
@@ -35,8 +34,8 @@ class PersistentPublisherRepository implements PublisherRepository {
     }
     try {
       final list = jsonDecode(raw) as List;
-      _items
-          .addAll(list.map((e) => Publisher.fromJson(e as Map<String, dynamic>)));
+      _items.addAll(
+          list.map((e) => Publisher.fromJson(e as Map<String, dynamic>)));
       _nextId = _items.isEmpty
           ? 1
           : _items.map((p) => p.id).reduce((a, b) => a > b ? a : b) + 1;
@@ -58,11 +57,14 @@ class PersistentPublisherRepository implements PublisherRepository {
   @override
   Future<int> countBooksUsing(int publisherId) async {
     final books = await _bookRepo.findAll();
-    return books.where((b) => b.publisherId == publisherId && !b.isDeleted).length;
+    return books
+        .where((b) => b.publisherId == publisherId && !b.isDeleted)
+        .length;
   }
 
   @override
-  Future<PageResult<Publisher>> find(PublisherQuery q, {CancelToken? cancelToken}) async {
+  Future<PageResult<Publisher>> find(PublisherQuery q,
+      {CancelToken? cancelToken}) async {
     await Future.delayed(const Duration(milliseconds: 150));
 
     var rows = _items.where((p) => q.includeDeleted || !p.isDeleted).toList();

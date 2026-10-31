@@ -10,9 +10,11 @@ class ApiReaderRepository implements ReaderRepository {
   final Dio _dio;
   ApiReaderRepository(this._dio);
 
-    @override
-  Future<PageResult<Reader>> find(ReaderQuery q, {CancelToken? cancelToken}) => guard(() async {
-        final r = await _dio.get('/readers',
+  @override
+  Future<PageResult<Reader>> find(ReaderQuery q, {CancelToken? cancelToken}) =>
+      guard(() async {
+        final r = await _dio.get(
+          '/readers',
           queryParameters: {
             if (q.search.trim().isNotEmpty) 'search': q.search.trim(),
             'sort': '${q.sortField},${q.sortAscending ? 'asc' : 'desc'}',
@@ -64,8 +66,8 @@ class ApiReaderRepository implements ReaderRepository {
   Future<void> softDelete(int id) => guard(() => _dio.delete('/readers/$id'));
 
   @override
-  Future<void> hardDelete(int id) =>
-      guard(() => _dio.delete('/readers/$id', queryParameters: {'hard': 'true'}));
+  Future<void> hardDelete(int id) => guard(
+      () => _dio.delete('/readers/$id', queryParameters: {'hard': 'true'}));
 
   @override
   Future<void> restore(int id) =>

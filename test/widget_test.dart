@@ -30,10 +30,12 @@ void main() {
       bookRepository: bookRepo,
       authorRepository: ApiAuthorRepository(dio),
       genreRepository: ApiGenreRepository(dio),
-      publisherRepository: ApiPublisherRepository(dio,),
+      publisherRepository: ApiPublisherRepository(
+        dio,
+      ),
       readerRepository: ApiReaderRepository(dio),
     ));
-    
+
     await tester.pump();
     expect(tester.takeException(), isNull);
   });

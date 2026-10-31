@@ -22,8 +22,8 @@ class AuthorFilters extends StatefulWidget {
 }
 
 class _AuthorFiltersState extends State<AuthorFilters> {
-  late final TextEditingController _yearFrom = TextEditingController(
-      text: widget.query.birthYearFrom?.toString() ?? '');
+  late final TextEditingController _yearFrom =
+      TextEditingController(text: widget.query.birthYearFrom?.toString() ?? '');
   late final TextEditingController _yearTo =
       TextEditingController(text: widget.query.birthYearTo?.toString() ?? '');
   final FocusNode _yearFromFocus = FocusNode();

@@ -8,7 +8,7 @@ import '../core/api_exceptions.dart';
 class AuthNotifier extends ChangeNotifier {
   static const _kAccess = 'auth_access_token';
   static const _kRefresh = 'auth_refresh_token';
-  
+
   final SharedPreferences _prefs;
   final Dio Function() _getDio;
 
@@ -42,8 +42,7 @@ class AuthNotifier extends ChangeNotifier {
       } else {
         await logout();
       }
-    } catch (_) {
-    }
+    } catch (_) {}
     notifyListeners();
   }
 
@@ -55,13 +54,14 @@ class AuthNotifier extends ChangeNotifier {
     final data = response.data as Map<String, dynamic>;
     _accessToken = data['accessToken'] as String;
     _user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
-    
+
     await _prefs.setString(_kAccess, _accessToken!);
     await _prefs.setString(_kRefresh, data['refreshToken'] as String);
     notifyListeners();
   }
 
-  Future<void> register(String username, String password, String email, String fullName) async {
+  Future<void> register(
+      String username, String password, String email, String fullName) async {
     await _getDio().post('/auth/register', data: {
       'username': username,
       'password': password,
@@ -72,11 +72,12 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> _refreshWith(String refreshToken) async {
-    final response = await _getDio().post('/auth/refresh', data: {'refreshToken': refreshToken});
+    final response = await _getDio()
+        .post('/auth/refresh', data: {'refreshToken': refreshToken});
     final data = response.data as Map<String, dynamic>;
     _accessToken = data['accessToken'] as String;
     _user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
-    
+
     await _prefs.setString(_kAccess, _accessToken!);
     await _prefs.setString(_kRefresh, data['refreshToken'] as String);
     notifyListeners();

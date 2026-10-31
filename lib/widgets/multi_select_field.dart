@@ -7,7 +7,8 @@ class MultiSelectField<T> extends FormField<List<T>> {
     required String label,
     required List<T> options,
     required String Function(T item) labelOf,
-    required Widget Function(T item, bool selected, VoidCallback toggle) chipBuilder,
+    required Widget Function(T item, bool selected, VoidCallback toggle)
+        chipBuilder,
     super.validator,
   }) : super(
           initialValue: initialValue,

@@ -186,14 +186,17 @@ class _BookListScreenState extends State<BookListScreen> {
                 onQueryChanged: _applyQuery,
               ),
             ),
-            Expanded(child: _buildBody(notifier, screenSize, canManage, auth.hasRole(Role.admin))),
+            Expanded(
+                child: _buildBody(
+                    notifier, screenSize, canManage, auth.hasRole(Role.admin))),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody(BookListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
+  Widget _buildBody(BookListNotifier notifier, ScreenSize screenSize,
+      bool canManage, bool isAdmin) {
     switch (notifier.status) {
       case LoadStatus.idle:
       case LoadStatus.loading:
@@ -233,7 +236,8 @@ class _BookListScreenState extends State<BookListScreen> {
     }
   }
 
-  Widget _buildList(BookListNotifier notifier, ScreenSize screenSize, bool canManage, bool isAdmin) {
+  Widget _buildList(BookListNotifier notifier, ScreenSize screenSize,
+      bool canManage, bool isAdmin) {
     final allColumns = <TableColumnSpec<Book>>[
       TableColumnSpec(
         label: 'Название',
@@ -286,7 +290,8 @@ class _BookListScreenState extends State<BookListScreen> {
     final columns = screenSize == ScreenSize.expanded
         ? allColumns
         : allColumns
-            .where((c) => const {'Название', 'Год', 'Страниц'}.contains(c.label))
+            .where(
+                (c) => const {'Название', 'Год', 'Страниц'}.contains(c.label))
             .toList();
 
     List<Widget> buildActions(Book b) {
@@ -336,7 +341,9 @@ class _BookListScreenState extends State<BookListScreen> {
                       subtitle: b.isbn,
                       selectable: canManage,
                       selected: canManage && notifier.selected.contains(b.id),
-                      onToggleSelect: canManage ? () => notifier.toggleSelection(b.id) : null,
+                      onToggleSelect: canManage
+                          ? () => notifier.toggleSelection(b.id)
+                          : null,
                       onTap: () => context.go('/books/${b.id}'),
                       fields: [
                         Text('Год: ${b.year}, ${b.pages} стр.'),

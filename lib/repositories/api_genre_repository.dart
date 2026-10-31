@@ -10,9 +10,11 @@ class ApiGenreRepository implements GenreRepository {
   final Dio _dio;
   ApiGenreRepository(this._dio);
 
-    @override
-  Future<PageResult<Genre>> find(GenreQuery q, {CancelToken? cancelToken}) => guard(() async {
-        final r = await _dio.get('/genres',
+  @override
+  Future<PageResult<Genre>> find(GenreQuery q, {CancelToken? cancelToken}) =>
+      guard(() async {
+        final r = await _dio.get(
+          '/genres',
           queryParameters: {
             if (q.search.trim().isNotEmpty) 'search': q.search.trim(),
             'sort': '${q.sortField},${q.sortAscending ? 'asc' : 'desc'}',
@@ -64,8 +66,8 @@ class ApiGenreRepository implements GenreRepository {
   Future<void> softDelete(int id) => guard(() => _dio.delete('/genres/$id'));
 
   @override
-  Future<void> hardDelete(int id) =>
-      guard(() => _dio.delete('/genres/$id', queryParameters: {'hard': 'true'}));
+  Future<void> hardDelete(int id) => guard(
+      () => _dio.delete('/genres/$id', queryParameters: {'hard': 'true'}));
 
   @override
   Future<void> restore(int id) => guard(() => _dio.post('/genres/$id/restore'));

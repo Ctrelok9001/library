@@ -23,8 +23,12 @@ class V {
       if (t.isEmpty) return 'Введите целое число';
       final n = int.tryParse(t);
       if (n == null) return 'Не является целым числом';
-      if (min != null && n < min) return '${label ?? "Значение"} не меньше $min';
-      if (max != null && n > max) return '${label ?? "Значение"} не больше $max';
+      if (min != null && n < min) {
+        return '${label ?? "Значение"} не меньше $min';
+      }
+      if (max != null && n > max) {
+        return '${label ?? "Значение"} не больше $max';
+      }
       return null;
     };
   }
